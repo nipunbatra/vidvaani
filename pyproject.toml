@@ -12,11 +12,13 @@ dependencies = [
     "pydub>=0.25.0",
     "httpx>=0.27.0",
     "rich>=13.0.0",
+    "gradio>=5.0.0",
 ]
 
 [project.scripts]
 yt-hindi = "yt_hindi.cli:main"
 yt-hindi-server = "yt_hindi.server:main"
+yt-hindi-ui = "yt_hindi.ui:main"
 
 [build-system]
 requires = ["hatchling"]

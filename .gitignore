@@ -1,0 +1,20 @@
+# Output files
+output/
+output_*/
+demo_videos/
+
+# Samples (can regenerate)
+samples/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# Lock file (optional, can include if you want reproducibility)
+# uv.lock

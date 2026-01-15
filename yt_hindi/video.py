@@ -31,58 +31,82 @@ def get_duration(path: Path) -> float:
 def concatenate_audio_segments(
     segments: list[tuple[Path, float, float]],
     output_path: Path,
-    total_duration: float
+    total_duration: float,
+    crossfade_ms: int = 50
 ) -> Path:
-    """Concatenate audio segments with proper timing.
+    """Concatenate audio segments with proper timing and crossfade.
 
     Args:
         segments: List of (audio_path, start_time, end_time) tuples
         output_path: Output audio file path
         total_duration: Total duration of the final audio
+        crossfade_ms: Crossfade duration between segments in milliseconds
 
     Returns:
         Path to concatenated audio file
     """
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmpdir = Path(tmpdir)
-
-        # Create silent base track
-        silent_path = tmpdir / "silent.wav"
+    if not segments:
+        # Create silent output
         cmd = [
             "ffmpeg", "-y",
             "-f", "lavfi",
             "-i", f"anullsrc=r=24000:cl=mono:d={total_duration}",
+            "-acodec", "aac",
+            "-b:a", "192k",
+            str(output_path)
+        ]
+        subprocess.run(cmd, check=True, capture_output=True)
+        return output_path
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+
+        # Create silent base track (stereo for compatibility)
+        silent_path = tmpdir / "silent.wav"
+        cmd = [
+            "ffmpeg", "-y",
+            "-f", "lavfi",
+            "-i", f"anullsrc=r=24000:cl=stereo:d={total_duration}",
             "-acodec", "pcm_s16le",
             str(silent_path)
         ]
         subprocess.run(cmd, check=True, capture_output=True)
 
-        # Build complex filter for overlaying segments
+        # Build complex filter with crossfade-like transitions
+        # Use afade for smooth in/out on each segment
         inputs = ["-i", str(silent_path)]
         filter_parts = []
 
-        for i, (audio_path, start_time, _) in enumerate(segments):
-            inputs.extend(["-i", str(audio_path)])
-            # Overlay each segment at its start time
-            if i == 0:
-                filter_parts.append(f"[0][1]adelay={int(start_time * 1000)}|{int(start_time * 1000)}[a1]")
-                prev = "a1"
-            else:
-                delay_ms = int(start_time * 1000)
-                filter_parts.append(f"[{i + 1}]adelay={delay_ms}|{delay_ms}[d{i}]")
-                filter_parts.append(f"[{prev}][d{i}]amix=inputs=2:duration=longest[a{i + 1}]")
-                prev = f"a{i + 1}"
+        fade_ms = crossfade_ms
 
-        if not filter_parts:
-            # No segments, just use silence
-            subprocess.run(["cp", str(silent_path), str(output_path)], check=True)
-            return output_path
+        for i, (audio_path, start_time, end_time) in enumerate(segments):
+            inputs.extend(["-i", str(audio_path)])
+            delay_ms = int(start_time * 1000)
+
+            # Apply fade in/out to each segment for smoother transitions
+            # Also convert to stereo and resample for consistency
+            filter_parts.append(
+                f"[{i + 1}]aresample=24000,aformat=sample_fmts=fltp:channel_layouts=stereo,"
+                f"afade=t=in:st=0:d={fade_ms/1000},afade=t=out:st={end_time - start_time - fade_ms/1000}:d={fade_ms/1000},"
+                f"adelay={delay_ms}|{delay_ms}[s{i}]"
+            )
+
+        # Mix all segments together
+        if len(segments) == 1:
+            mix_input = "[s0]"
+        else:
+            segment_refs = "".join(f"[s{i}]" for i in range(len(segments)))
+            filter_parts.append(f"{segment_refs}amix=inputs={len(segments)}:duration=longest:normalize=0[mixed]")
+            mix_input = "[mixed]"
+
+        # Mix with silent base and normalize
+        filter_parts.append(f"[0]{mix_input}amix=inputs=2:duration=first:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11[out]")
 
         filter_complex = ";".join(filter_parts)
 
         cmd = ["ffmpeg", "-y"] + inputs + [
             "-filter_complex", filter_complex,
-            "-map", f"[{prev}]",
+            "-map", "[out]",
             "-acodec", "aac",
             "-b:a", "192k",
             str(output_path)
@@ -90,7 +114,7 @@ def concatenate_audio_segments(
 
         try:
             subprocess.run(cmd, check=True, capture_output=True)
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
             # Fallback: simpler concatenation
             return concatenate_audio_simple(segments, output_path, total_duration, tmpdir)
 

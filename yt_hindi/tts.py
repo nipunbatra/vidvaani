@@ -59,13 +59,27 @@ def get_audio_duration(path: Path) -> float:
         return 0.0
 
 
-def adjust_audio_duration(input_path: Path, output_path: Path, target_duration: float) -> Path:
+def adjust_audio_duration(
+    input_path: Path,
+    output_path: Path,
+    target_duration: float,
+    min_speed: float = 0.85,
+    max_speed: float = 1.25
+) -> Path:
     """Adjust audio duration using ffmpeg atempo filter + padding.
 
     Strategy:
-    - If Hindi is shorter: slow down (up to 0.8x) then pad with silence
-    - If Hindi is longer: speed up (up to 1.5x) then truncate if needed
+    - If Hindi is shorter: slow down (to min_speed) then pad with silence
+    - If Hindi is longer: speed up (to max_speed) then truncate if needed
     - Preserves pitch while changing duration
+    - Limits speed range for more natural sound
+
+    Args:
+        input_path: Input audio file
+        output_path: Output audio file
+        target_duration: Target duration in seconds
+        min_speed: Minimum speed multiplier (default 0.85 = 15% slower)
+        max_speed: Maximum speed multiplier (default 1.25 = 25% faster)
     """
     actual_duration = get_audio_duration(input_path)
     if actual_duration == 0:
@@ -81,8 +95,7 @@ def adjust_audio_duration(input_path: Path, output_path: Path, target_duration: 
 
     if ratio < 1.0:
         # Hindi is shorter than target - slow down then pad
-        # Slow down to at most 0.8x speed (1.25x duration)
-        slow_factor = max(0.8, ratio)
+        slow_factor = max(min_speed, ratio)
         slowed_duration = actual_duration / slow_factor
         padding_needed = target_duration - slowed_duration
 
@@ -104,8 +117,8 @@ def adjust_audio_duration(input_path: Path, output_path: Path, target_duration: 
                 "-vn", str(output_path)
             ]
     else:
-        # Hindi is longer than target - speed up (max 1.5x) then truncate
-        speed_factor = min(1.5, ratio)
+        # Hindi is longer than target - speed up then truncate
+        speed_factor = min(max_speed, ratio)
 
         # Chain atempo filters if needed (each limited to 0.5-2.0)
         atempo_filters = []

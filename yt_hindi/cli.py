@@ -19,8 +19,8 @@ def main():
     dub_parser.add_argument("url", help="YouTube video URL")
     dub_parser.add_argument("-o", "--output", default="./output", help="Output directory")
     dub_parser.add_argument("-v", "--voice", default="Kore",
-                           help="Voice (Gemini: Aoede/Charon/Fenrir/Kore/Puck, Edge: male/female)")
-    dub_parser.add_argument("-b", "--backend", default="gemini", choices=["gemini", "edge"],
+                           help="Voice (Gemini: Aoede/Charon/Fenrir/Kore/Puck, Edge: male/female, Sarvam: abhilash/anushka/karun/vidya)")
+    dub_parser.add_argument("-b", "--backend", default="gemini", choices=["gemini", "edge", "sarvam"],
                            help="TTS backend")
     dub_parser.add_argument("--keep-original", action="store_true",
                            help="Keep original audio at low volume")

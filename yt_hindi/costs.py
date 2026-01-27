@@ -1,7 +1,10 @@
-"""Gemini API cost tracking."""
+"""API cost tracking for Gemini and Sarvam."""
 
 from dataclasses import dataclass, field
 from typing import ClassVar
+
+# USD to INR rate (approximate)
+USD_TO_INR = 83.0
 
 # Gemini pricing (as of Jan 2025) - per 1M tokens/characters
 # https://ai.google.dev/pricing
@@ -18,17 +21,25 @@ PRICING = {
         "input": 0.075,
         "output": 0.30,
     },
+    # Sarvam AI pricing (Rs 15 per 10,000 chars)
+    # https://www.sarvam.ai/apis/text-to-speech
+    "sarvam-bulbul-v2": {
+        "per_char_inr": 0.0015,  # Rs 15 / 10,000 = Rs 0.0015 per char
+        "per_char_usd": 0.0015 / USD_TO_INR,  # ~$0.000018 per char
+    },
 }
 
 
 @dataclass
 class CostTracker:
-    """Track Gemini API costs across a session."""
+    """Track API costs across a session (Gemini + Sarvam)."""
 
     translation_input_tokens: int = 0
     translation_output_tokens: int = 0
-    tts_characters: int = 0
-    tts_calls: int = 0
+    tts_gemini_characters: int = 0
+    tts_gemini_calls: int = 0
+    tts_sarvam_characters: int = 0
+    tts_sarvam_calls: int = 0
 
     # Class-level singleton for global tracking
     _instance: ClassVar["CostTracker | None"] = None
@@ -50,10 +61,14 @@ class CostTracker:
         self.translation_input_tokens += input_tokens
         self.translation_output_tokens += output_tokens
 
-    def add_tts(self, characters: int):
+    def add_tts(self, characters: int, provider: str = "gemini"):
         """Record a TTS API call."""
-        self.tts_characters += characters
-        self.tts_calls += 1
+        if provider == "sarvam":
+            self.tts_sarvam_characters += characters
+            self.tts_sarvam_calls += 1
+        else:
+            self.tts_gemini_characters += characters
+            self.tts_gemini_calls += 1
 
     @property
     def translation_cost(self) -> float:
@@ -64,10 +79,27 @@ class CostTracker:
         return input_cost + output_cost
 
     @property
-    def tts_cost(self) -> float:
-        """Calculate TTS cost in USD."""
+    def tts_gemini_cost(self) -> float:
+        """Calculate Gemini TTS cost in USD."""
         pricing = PRICING["gemini-2.5-flash-preview-tts"]
-        return self.tts_characters * pricing["per_char"]
+        return self.tts_gemini_characters * pricing["per_char"]
+
+    @property
+    def tts_sarvam_cost(self) -> float:
+        """Calculate Sarvam TTS cost in USD."""
+        pricing = PRICING["sarvam-bulbul-v2"]
+        return self.tts_sarvam_characters * pricing["per_char_usd"]
+
+    @property
+    def tts_sarvam_cost_inr(self) -> float:
+        """Calculate Sarvam TTS cost in INR."""
+        pricing = PRICING["sarvam-bulbul-v2"]
+        return self.tts_sarvam_characters * pricing["per_char_inr"]
+
+    @property
+    def tts_cost(self) -> float:
+        """Calculate total TTS cost in USD."""
+        return self.tts_gemini_cost + self.tts_sarvam_cost
 
     @property
     def total_cost(self) -> float:
@@ -76,23 +108,36 @@ class CostTracker:
 
     def summary(self) -> dict:
         """Get cost summary."""
-        return {
+        result = {
             "translation": {
                 "input_tokens": self.translation_input_tokens,
                 "output_tokens": self.translation_output_tokens,
                 "cost_usd": round(self.translation_cost, 6),
             },
-            "tts": {
-                "characters": self.tts_characters,
-                "calls": self.tts_calls,
-                "cost_usd": round(self.tts_cost, 6),
-            },
             "total_cost_usd": round(self.total_cost, 6),
         }
+        if self.tts_gemini_calls > 0:
+            result["tts_gemini"] = {
+                "characters": self.tts_gemini_characters,
+                "calls": self.tts_gemini_calls,
+                "cost_usd": round(self.tts_gemini_cost, 6),
+            }
+        if self.tts_sarvam_calls > 0:
+            result["tts_sarvam"] = {
+                "characters": self.tts_sarvam_characters,
+                "calls": self.tts_sarvam_calls,
+                "cost_usd": round(self.tts_sarvam_cost, 6),
+                "cost_inr": round(self.tts_sarvam_cost_inr, 2),
+            }
+        return result
 
     def __str__(self) -> str:
-        return (
-            f"Translation: {self.translation_input_tokens:,} in / {self.translation_output_tokens:,} out tokens = ${self.translation_cost:.4f}\n"
-            f"TTS: {self.tts_characters:,} chars ({self.tts_calls} calls) = ${self.tts_cost:.4f}\n"
-            f"Total: ${self.total_cost:.4f}"
-        )
+        lines = [
+            f"Translation: {self.translation_input_tokens:,} in / {self.translation_output_tokens:,} out tokens = ${self.translation_cost:.4f}"
+        ]
+        if self.tts_gemini_calls > 0:
+            lines.append(f"TTS (Gemini): {self.tts_gemini_characters:,} chars ({self.tts_gemini_calls} calls) = ${self.tts_gemini_cost:.4f}")
+        if self.tts_sarvam_calls > 0:
+            lines.append(f"TTS (Sarvam): {self.tts_sarvam_characters:,} chars ({self.tts_sarvam_calls} calls) = Rs {self.tts_sarvam_cost_inr:.2f} (${self.tts_sarvam_cost:.4f})")
+        lines.append(f"Total: ${self.total_cost:.4f}")
+        return "\n".join(lines)

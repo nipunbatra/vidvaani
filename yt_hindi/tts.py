@@ -1,10 +1,11 @@
-"""Text-to-Speech using Gemini API and Edge TTS fallback."""
+"""Text-to-Speech using Gemini API, Sarvam AI, and Edge TTS fallback."""
 
 import asyncio
 import base64
 import os
 import subprocess
 import tempfile
+import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from dataclasses import dataclass
@@ -34,6 +35,17 @@ EDGE_VOICES = {
 
 # Gemini voice options (Aoede, Charon, Fenrir, Kore, Puck)
 GEMINI_VOICES = ["Aoede", "Charon", "Fenrir", "Kore", "Puck"]
+
+# Sarvam AI voices (Bulbul v2) - native Hindi voices
+SARVAM_VOICES = {
+    "anushka": "anushka",   # Female
+    "manisha": "manisha",   # Female
+    "vidya": "vidya",       # Female
+    "arya": "arya",         # Female
+    "abhilash": "abhilash", # Male
+    "karun": "karun",       # Male
+    "hitesh": "hitesh",     # Male
+}
 
 
 def get_gemini_client() -> genai.Client:
@@ -217,6 +229,77 @@ def synthesize_gemini(
     return output_path
 
 
+def synthesize_sarvam(
+    text: str,
+    output_path: Path,
+    voice: str = "abhilash",
+    pace: float = 1.0,
+    pitch: float = 0.0
+) -> Path:
+    """Synthesize speech using Sarvam AI Bulbul v2 API.
+
+    Args:
+        text: Text to synthesize (Hindi)
+        output_path: Output file path
+        voice: Voice name (anushka, manisha, vidya, arya, abhilash, karun, hitesh)
+        pace: Speech pace (0.5-2.0, default 1.0)
+        pitch: Voice pitch (-0.75 to 0.75, default 0.0)
+
+    Returns:
+        Path to output audio file
+    """
+    api_key = os.environ.get("SARVAM_API_KEY")
+    if not api_key:
+        raise ValueError("Set SARVAM_API_KEY environment variable")
+
+    # Normalize voice name
+    voice_name = SARVAM_VOICES.get(voice.lower(), "abhilash")
+
+    url = "https://api.sarvam.ai/text-to-speech"
+    headers = {
+        "Content-Type": "application/json",
+        "api-subscription-key": api_key
+    }
+    payload = {
+        "inputs": [text],
+        "target_language_code": "hi-IN",
+        "speaker": voice_name,
+        "model": "bulbul:v2",
+        "pace": pace,
+        "pitch": pitch,
+        "loudness": 1.0
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+    response.raise_for_status()
+
+    result = response.json()
+    audio_base64 = result["audios"][0]
+
+    # Track TTS cost (Rs 15 per 10,000 chars = Rs 0.0015/char)
+    tracker = CostTracker.get()
+    tracker.add_tts(len(text), provider="sarvam")
+
+    # Decode base64 audio and save
+    audio_data = base64.b64decode(audio_base64)
+    wav_path = output_path.with_suffix(".wav")
+    wav_path.write_bytes(audio_data)
+
+    # Convert to mp3 if needed
+    if output_path.suffix == ".mp3":
+        cmd = [
+            "ffmpeg", "-y", "-i", str(wav_path),
+            "-acodec", "libmp3lame", "-q:a", "2",
+            str(output_path)
+        ]
+        subprocess.run(cmd, check=True, capture_output=True)
+        wav_path.unlink(missing_ok=True)
+    else:
+        subprocess.run(["mv", str(wav_path), str(output_path)], check=True)
+
+    return output_path
+
+
 async def synthesize_edge(
     text: str,
     output_path: Path,
@@ -241,7 +324,7 @@ def synthesize_segment(
     target_duration: float,
     output_path: Path,
     voice: str = "Kore",
-    backend: Literal["gemini", "edge"] = "gemini"
+    backend: Literal["gemini", "edge", "sarvam"] = "gemini"
 ) -> AudioSegment:
     """Synthesize a segment with duration matching.
 
@@ -249,7 +332,7 @@ def synthesize_segment(
         text: Hindi text to synthesize
         target_duration: Target duration in seconds
         output_path: Output file path
-        voice: Voice name (Gemini: Aoede/Charon/Fenrir/Kore/Puck, Edge: male/female)
+        voice: Voice name (Gemini: Aoede/Charon/Fenrir/Kore/Puck, Edge: male/female, Sarvam: abhilash/anushka/etc)
         backend: TTS backend to use
 
     Returns:
@@ -262,6 +345,8 @@ def synthesize_segment(
         # First pass: generate at normal speed
         if backend == "gemini":
             synthesize_gemini(text, tmp_path, voice)
+        elif backend == "sarvam":
+            synthesize_sarvam(text, tmp_path, voice)
         else:
             synthesize_edge_sync(text, tmp_path, voice)
 
@@ -326,7 +411,7 @@ class TTSJob:
 def synthesize_batch_parallel(
     jobs: list[TTSJob],
     voice: str = "Kore",
-    backend: Literal["gemini", "edge"] = "gemini",
+    backend: Literal["gemini", "edge", "sarvam"] = "gemini",
     max_workers: int = 5,
     progress_callback: Callable[[int, int], None] | None = None
 ) -> list[tuple[Path, float, float]]:

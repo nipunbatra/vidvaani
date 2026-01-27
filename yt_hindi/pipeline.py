@@ -245,11 +245,18 @@ def run_pipeline(
         f"{costs['translation']['input_tokens']:,} in / {costs['translation']['output_tokens']:,} out tokens",
         f"${costs['translation']['cost_usd']:.6f}"
     )
-    cost_table.add_row(
-        "TTS",
-        f"{costs['tts']['characters']:,} chars ({costs['tts']['calls']} calls)",
-        f"${costs['tts']['cost_usd']:.6f}"
-    )
+    if 'tts_gemini' in costs:
+        cost_table.add_row(
+            "TTS (Gemini)",
+            f"{costs['tts_gemini']['characters']:,} chars ({costs['tts_gemini']['calls']} calls)",
+            f"${costs['tts_gemini']['cost_usd']:.6f}"
+        )
+    if 'tts_sarvam' in costs:
+        cost_table.add_row(
+            "TTS (Sarvam)",
+            f"{costs['tts_sarvam']['characters']:,} chars ({costs['tts_sarvam']['calls']} calls)",
+            f"Rs {costs['tts_sarvam']['cost_inr']:.2f} (${costs['tts_sarvam']['cost_usd']:.6f})"
+        )
     cost_table.add_row(
         "[bold]Total[/bold]",
         "",

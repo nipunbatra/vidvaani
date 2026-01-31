@@ -1,5 +1,6 @@
 """YouTube video downloader using yt-dlp Python API."""
 
+import re
 import subprocess
 from pathlib import Path
 from dataclasses import dataclass
@@ -13,6 +14,29 @@ class DownloadResult:
     audio_path: Path
     title: str
     duration: float
+
+
+def sanitize_title(title: str, max_length: int = 50) -> str:
+    """Convert title to a safe folder/file name."""
+    # Remove special characters, keep alphanumeric, spaces, hyphens
+    safe = re.sub(r'[^\w\s\-]', '', title)
+    # Replace spaces with underscores
+    safe = re.sub(r'\s+', '_', safe.strip())
+    # Truncate and remove trailing underscores
+    return safe[:max_length].rstrip('_')
+
+
+def get_video_info(url: str) -> dict:
+    """Get video info without downloading."""
+    url = url.replace("\\", "")
+    with yt_dlp.YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
+        info = ydl.extract_info(url, download=False)
+    return {
+        'id': info['id'],
+        'title': info['title'],
+        'duration': info.get('duration', 0),
+        'safe_title': sanitize_title(info['title'])
+    }
 
 
 def download_video(url: str, output_dir: Path, progress_hook=None) -> DownloadResult:

@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Hindi Dubbing - AI-Powered Video Translation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 50%, #1e3a5f 100%);
+            padding: 60px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.3rem;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tech {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #f8fafc;
+            margin-bottom: 10px;
+        }
+
+        .section-subtitle {
+            color: #94a3b8;
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        .demo-section {
+            margin-bottom: 60px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.02) 100%);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 20px;
+        }
+
+        .demo-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .demo-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .demo-title {
+            font-size: 1.4rem;
+            color: #f1f5f9;
+        }
+
+        .demo-source {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .demo-source a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .demo-source a:hover {
+            text-decoration: underline;
+        }
+
+        .video-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .video-box {
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+
+        .video-box.featured {
+            border-color: #f59e0b;
+        }
+
+        .video-box video {
+            width: 100%;
+            display: block;
+            background: #000;
+        }
+
+        .video-label {
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-label-text {
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #3b82f6;
+        }
+
+        .card video {
+            width: 100%;
+            display: block;
+            background: #000;
+        }
+
+        .card-body {
+            padding: 14px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #f1f5f9;
+        }
+
+        .badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-gemini { background: #3b82f6; color: #fff; }
+        .badge-sarvam { background: #ef4444; color: #fff; }
+        .badge-edge { background: #10b981; color: #fff; }
+        .badge-male { background: #6366f1; color: #fff; }
+        .badge-female { background: #ec4899; color: #fff; }
+        .badge-subs { background: #f59e0b; color: #000; }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .feature {
+            background: #1e293b;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .feature h3 {
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .comparison {
+            margin-top: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #334155;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-top: 1px solid #334155;
+            color: #cbd5e1;
+        }
+
+        tr:hover td { background: rgba(59,130,246,0.05); }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+            border-top: 1px solid #1e293b;
+            margin-top: 60px;
+        }
+
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .footer a:hover { text-decoration: underline; }
+
+        .pipeline-info {
+            background: #1e293b;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 1px solid #334155;
+        }
+
+        .pipeline-steps {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .pipeline-step {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 15px;
+            background: rgba(59,130,246,0.1);
+            border-radius: 8px;
+        }
+
+        .pipeline-step-num {
+            background: #3b82f6;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .pipeline-step-text {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        @media (max-width: 900px) {
+            .video-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+            .pipeline-steps { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>yt-hindi</h1>
+        <p class="tagline">AI-powered YouTube to Hindi dubbing pipeline</p>
+        <div class="tech-stack">
+            <span class="tech">MLX Whisper</span>
+            <span class="tech">Gemini 2.0 Flash</span>
+            <span class="tech">Sarvam AI TTS</span>
+            <span class="tech">Gemini TTS</span>
+            <span class="tech">ffmpeg</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Pipeline Overview -->
+        <div class="pipeline-info">
+            <h3 style="color: #f1f5f9; margin-bottom: 15px;">How It Works</h3>
+            <div class="pipeline-steps">
+                <div class="pipeline-step">
+                    <div class="pipeline-step-num">1</div>
+                    <div class="pipeline-step-text">Download<br>YouTube Video</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="pipeline-step-num">2</div>
+                    <div class="pipeline-step-text">Auto-detect<br>Intro Music</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="pipeline-step-num">3</div>
+                    <div class="pipeline-step-text">Transcribe<br>(Whisper)</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="pipeline-step-num">4</div>
+                    <div class="pipeline-step-text">Translate<br>(Gemini)</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="pipeline-step-num">5</div>
+                    <div class="pipeline-step-text">Hindi TTS<br>(Sarvam/Gemini)</div>
+                </div>
+                <div class="pipeline-step">
+                    <div class="pipeline-step-num">6</div>
+                    <div class="pipeline-step-text">Assemble<br>Final Video</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NPTEL Deep Learning Demo (Primary) -->
+        <div class="demo-section">
+            <div class="demo-header">
+                <span class="demo-badge">Featured Demo</span>
+                <div>
+                    <div class="demo-title">NPTEL: Deep Learning - Lecture 1.1 Biological Neurons</div>
+                    <div class="demo-source">
+                        Source: <a href="https://www.youtube.com/watch?v=4TC5s_xNKSs" target="_blank">Prof. Mitesh Khapra, IIT Madras</a> (7 min)
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-comparison">
+                <div class="video-box">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/deep_learning/original.mp4" type="video/mp4">
+                    </video>
+                    <div class="video-label">
+                        <span class="video-label-text">Original (English)</span>
+                    </div>
+                </div>
+                <div class="video-box featured">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/deep_learning/hindi_abhilash.mp4" type="video/mp4">
+                    </video>
+                    <div class="video-label">
+                        <span class="video-label-text">Hindi Dubbed</span>
+                        <div class="badges">
+                            <span class="badge badge-sarvam">Sarvam</span>
+                            <span class="badge badge-male">Abhilash</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #f1f5f9; margin-bottom: 15px;">All Voice Variants</h3>
+            <div class="grid">
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/deep_learning/hindi_abhilash_with_subs.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Abhilash + Subtitles</h3>
+                        <div class="badges">
+                            <span class="badge badge-sarvam">Sarvam AI</span>
+                            <span class="badge badge-subs">Subtitles</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/deep_learning/hindi_karun.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Karun</h3>
+                        <div class="badges">
+                            <span class="badge badge-sarvam">Sarvam AI</span>
+                            <span class="badge badge-male">Male</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/deep_learning/hindi_hitesh.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Hitesh</h3>
+                        <div class="badges">
+                            <span class="badge badge-sarvam">Sarvam AI</span>
+                            <span class="badge badge-male">Male</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/deep_learning/hindi_vidya.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Vidya</h3>
+                        <div class="badges">
+                            <span class="badge badge-sarvam">Sarvam AI</span>
+                            <span class="badge badge-female">Female</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Linear Regression Demo (Secondary) -->
+        <div class="demo-section" style="background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(16,185,129,0.02) 100%); border-color: rgba(16,185,129,0.2);">
+            <div class="demo-header">
+                <div>
+                    <div class="demo-title">NPTEL: Linear Regression</div>
+                    <div class="demo-source">
+                        Source: <a href="https://www.youtube.com/watch?v=4Z45xppisRs" target="_blank">Prof. Mitesh Khapra, IIT Madras</a> (19 min)
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/linear_regression/original.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Original (English)</h3>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/linear_regression/hindi_abhilash.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Abhilash</h3>
+                        <div class="badges">
+                            <span class="badge badge-sarvam">Sarvam AI</span>
+                            <span class="badge badge-male">Male</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/linear_regression/hindi_charon.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Charon</h3>
+                        <div class="badges">
+                            <span class="badge badge-gemini">Gemini TTS</span>
+                            <span class="badge badge-male">Male</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/linear_regression/hindi_fenrir.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Fenrir</h3>
+                        <div class="badges">
+                            <span class="badge badge-gemini">Gemini TTS</span>
+                            <span class="badge badge-male">Male</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mini Demo - Voice Comparison -->
+        <div class="demo-section" style="background: linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(168,85,247,0.02) 100%); border-color: rgba(168,85,247,0.2);">
+            <div class="demo-header">
+                <span class="demo-badge" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">Quick Compare</span>
+                <div>
+                    <div class="demo-title">Voice Comparison (58s clip)</div>
+                    <div class="demo-source">
+                        Source: <a href="https://www.youtube.com/watch?v=UuoVhUqWAFc" target="_blank">2D Integration with GeoGebra</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/mini_demo/english_original.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Original (English)</h3>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/mini_demo/charon.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Charon</h3>
+                        <div class="badges">
+                            <span class="badge badge-gemini">Gemini TTS</span>
+                            <span class="badge badge-male">Male</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/mini_demo/fenrir.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Fenrir</h3>
+                        <div class="badges">
+                            <span class="badge badge-gemini">Gemini TTS</span>
+                            <span class="badge badge-male">Male</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/mini_demo/kore.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Kore</h3>
+                        <div class="badges">
+                            <span class="badge badge-gemini">Gemini TTS</span>
+                            <span class="badge badge-female">Female</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/mini_demo/sarvam_abhilash.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Abhilash</h3>
+                        <div class="badges">
+                            <span class="badge badge-sarvam">Sarvam AI</span>
+                            <span class="badge badge-male">Male</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <video controls preload="metadata">
+                        <source src="demo_videos/mini_demo/sarvam_anushka.mp4" type="video/mp4">
+                    </video>
+                    <div class="card-body">
+                        <h3 class="card-title">Anushka</h3>
+                        <div class="badges">
+                            <span class="badge badge-sarvam">Sarvam AI</span>
+                            <span class="badge badge-female">Female</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <h2 class="section-title">Features</h2>
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🎵</div>
+                <h3>Auto Intro Detection</h3>
+                <p>Automatically detects intro music and preserves it. Speech dubbing starts at the right moment.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔊</div>
+                <h3>Non-Speech Preservation</h3>
+                <p>Keeps original audio during pauses and non-speech sections for natural sound.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📝</div>
+                <h3>SRT Subtitles</h3>
+                <p>Generates Hindi SRT files. Can burn subtitles into video in a black bar below.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎙️</div>
+                <h3>Multiple TTS Backends</h3>
+                <p>Choose from Sarvam AI (native Indian voices), Gemini TTS, or free Edge TTS.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>Parallel Processing</h3>
+                <p>TTS generation runs in parallel. Translation and TTS results are cached.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💰</div>
+                <h3>Cost Tracking</h3>
+                <p>Real-time API cost tracking. Full 7-min video costs ~$0.10 with Sarvam.</p>
+            </div>
+        </div>
+
+        <!-- TTS Comparison -->
+        <div class="comparison">
+            <h2 class="section-title">TTS Provider Comparison</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>Voices</th>
+                        <th>Hindi Quality</th>
+                        <th>Cost (10K chars)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-sarvam">Sarvam AI</span></td>
+                        <td>Abhilash, Karun, Hitesh, Vidya, Anushka, Manisha, Arya</td>
+                        <td>Native Indian accent</td>
+                        <td>Rs 15 (~$0.18)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-gemini">Gemini TTS</span></td>
+                        <td>Aoede, Charon, Fenrir, Kore, Puck</td>
+                        <td>Excellent, natural</td>
+                        <td>~$0.04</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-edge">Edge TTS</span></td>
+                        <td>Madhur (Male), Swara (Female)</td>
+                        <td>Good, robotic</td>
+                        <td>Free</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Built by <a href="https://nipunbatra.github.io">Nipun Batra</a> | IIT Gandhinagar</p>
+        <p style="margin-top: 10px;">
+            <a href="https://github.com/nipunbatra/yt-hindi">View on GitHub</a>
+        </p>
+    </div>
+</body>
+</html>

@@ -157,7 +157,8 @@ def synthesize_gemini(
     text: str,
     output_path: Path,
     voice: str = "Kore",
-    model: str = "gemini-2.5-flash-preview-tts"
+    model: str = "gemini-2.5-flash-preview-tts",
+    max_retries: int = 3
 ) -> Path:
     """Synthesize speech using Gemini TTS API.
 
@@ -166,30 +167,44 @@ def synthesize_gemini(
         output_path: Output file path (will be .wav)
         voice: Voice name (Aoede, Charon, Fenrir, Kore, Puck)
         model: Gemini TTS model
+        max_retries: Number of retries on failure
 
     Returns:
         Path to output audio file
     """
+    import time
+
     client = get_gemini_client()
 
-    response = client.models.generate_content(
-        model=model,
-        contents=text,
-        config=types.GenerateContentConfig(
-            response_modalities=["AUDIO"],
-            speech_config=types.SpeechConfig(
-                voice_config=types.VoiceConfig(
-                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                        voice_name=voice,
-                    )
-                )
-            ),
-        ),
-    )
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=text,
+                config=types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                    speech_config=types.SpeechConfig(
+                        voice_config=types.VoiceConfig(
+                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                voice_name=voice,
+                            )
+                        )
+                    ),
+                ),
+            )
 
-    # Extract audio data from response
-    audio_data = response.candidates[0].content.parts[0].inline_data.data
-    mime_type = response.candidates[0].content.parts[0].inline_data.mime_type
+            # Extract audio data from response
+            if not response.candidates or not response.candidates[0].content:
+                raise ValueError("Empty response from TTS API")
+
+            audio_data = response.candidates[0].content.parts[0].inline_data.data
+            mime_type = response.candidates[0].content.parts[0].inline_data.mime_type
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)  # Exponential backoff
+                continue
+            raise
 
     # Track TTS cost
     tracker = CostTracker.get()
@@ -234,7 +249,8 @@ def synthesize_sarvam(
     output_path: Path,
     voice: str = "abhilash",
     pace: float = 1.0,
-    pitch: float = 0.0
+    pitch: float = 0.0,
+    max_retries: int = 3
 ) -> Path:
     """Synthesize speech using Sarvam AI Bulbul v2 API.
 
@@ -244,10 +260,13 @@ def synthesize_sarvam(
         voice: Voice name (anushka, manisha, vidya, arya, abhilash, karun, hitesh)
         pace: Speech pace (0.5-2.0, default 1.0)
         pitch: Voice pitch (-0.75 to 0.75, default 0.0)
+        max_retries: Number of retries on failure
 
     Returns:
         Path to output audio file
     """
+    import time
+
     api_key = os.environ.get("SARVAM_API_KEY")
     if not api_key:
         raise ValueError("Set SARVAM_API_KEY environment variable")
@@ -270,8 +289,17 @@ def synthesize_sarvam(
         "loudness": 1.0
     }
 
-    response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()
+    for attempt in range(max_retries):
+        response = requests.post(url, json=payload, headers=headers)
+        if response.status_code == 429:
+            # Rate limited - wait and retry
+            wait_time = 2 ** (attempt + 1)
+            time.sleep(wait_time)
+            continue
+        response.raise_for_status()
+        break
+    else:
+        response.raise_for_status()  # Raise the last error
 
     result = response.json()
     audio_base64 = result["audios"][0]

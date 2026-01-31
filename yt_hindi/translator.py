@@ -24,32 +24,19 @@ def get_client() -> genai.Client:
     return genai.Client(api_key=api_key)
 
 
-def translate_segments(
-    segments: list[dict],
-    source_lang: str = "English",
-    target_lang: str = "Hindi",
-    model: str = "gemini-2.0-flash"
-) -> list[TranslatedSegment]:
-    """Translate transcript segments to target language.
+def _translate_batch(
+    client,
+    segments: list,
+    source_lang: str,
+    target_lang: str,
+    model: str,
+    start_id: int = 0
+) -> list[dict]:
+    """Translate a single batch of segments."""
+    from google.genai import types
 
-    Uses Gemini to translate while preserving timing constraints.
-    The translation is optimized for spoken Hindi that matches
-    the original audio duration.
-
-    Args:
-        segments: List of segments with start, end, text
-        source_lang: Source language
-        target_lang: Target language
-        model: Gemini model to use
-
-    Returns:
-        List of TranslatedSegment with original and translated text
-    """
-    client = get_client()
-
-    # Build prompt for batch translation
     segments_json = json.dumps([
-        {"id": i, "start": s.start, "end": s.end, "text": s.text, "duration": s.end - s.start}
+        {"id": start_id + i, "start": s.start, "end": s.end, "text": s.text, "duration": s.end - s.start}
         for i, s in enumerate(segments)
     ], indent=2)
 
@@ -66,14 +53,14 @@ CRITICAL REQUIREMENTS:
 Input segments (with duration in seconds):
 {segments_json}
 
-Return ONLY a JSON array with the same structure, adding a "translated" field:
-[{{"id": 0, "start": 0.0, "end": 2.5, "text": "original", "translated": "हिंदी अनुवाद"}}]
-
-JSON output:"""
+Return a JSON array with the same structure, adding a "translated" field for each segment."""
 
     response = client.models.generate_content(
         model=model,
-        contents=prompt
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json"
+        )
     )
 
     # Track costs
@@ -84,16 +71,42 @@ JSON output:"""
             output_tokens=response.usage_metadata.candidates_token_count or 0
         )
 
-    # Parse response
-    response_text = response.text.strip()
-    # Handle markdown code blocks
-    if response_text.startswith("```"):
-        response_text = response_text.split("```")[1]
-        if response_text.startswith("json"):
-            response_text = response_text[4:]
-        response_text = response_text.strip()
+    return json.loads(response.text)
 
-    translated_data = json.loads(response_text)
+
+def translate_segments(
+    segments: list[dict],
+    source_lang: str = "English",
+    target_lang: str = "Hindi",
+    model: str = "gemini-2.0-flash",
+    batch_size: int = 20
+) -> list[TranslatedSegment]:
+    """Translate transcript segments to target language.
+
+    Uses Gemini to translate while preserving timing constraints.
+    The translation is optimized for spoken Hindi that matches
+    the original audio duration.
+
+    Args:
+        segments: List of segments with start, end, text
+        source_lang: Source language
+        target_lang: Target language
+        model: Gemini model to use
+        batch_size: Number of segments per batch (to avoid truncation)
+
+    Returns:
+        List of TranslatedSegment with original and translated text
+    """
+    client = get_client()
+    all_translated = []
+
+    # Process in batches to avoid output truncation
+    for i in range(0, len(segments), batch_size):
+        batch = segments[i:i + batch_size]
+        batch_result = _translate_batch(
+            client, batch, source_lang, target_lang, model, start_id=i
+        )
+        all_translated.extend(batch_result)
 
     return [
         TranslatedSegment(
@@ -102,7 +115,7 @@ JSON output:"""
             original=item["text"],
             translated=item["translated"]
         )
-        for item in translated_data
+        for item in all_translated
     ]
 
 

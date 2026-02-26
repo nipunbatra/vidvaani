@@ -74,16 +74,28 @@ def detect_intro_offset(path: Path, min_intro_duration: float = 3.0,
     result = subprocess.run(cmd, capture_output=True, text=True)
     stderr = result.stderr
 
-    # Parse silence_end timestamps
-    # Format: [silencedetect @ 0x...] silence_end: 13.187521 | silence_duration: 2.453604
+    # Parse silence start/end pairs
+    # Format: silence_start: X | silence_end: Y | silence_duration: Z
+    silence_starts = []
     silence_ends = []
+    for match in re.finditer(r'silence_start:\s*([\d.]+)', stderr):
+        silence_starts.append(float(match.group(1)))
     for match in re.finditer(r'silence_end:\s*([\d.]+)', stderr):
         silence_ends.append(float(match.group(1)))
 
-    # Find first silence_end after min_intro_duration
-    # This indicates: intro ended, pause ended, speech starting
-    for end_time in silence_ends:
-        if end_time >= min_intro_duration:
+    # Find first silence_end after min_intro_duration where the silence itself
+    # started after min_intro_duration (ruling out a brief pre-roll then speech
+    # pause — a real intro ends in one continuous non-silent block before the gap).
+    for i, end_time in enumerate(silence_ends):
+        if end_time < min_intro_duration:
+            continue
+        # Confirm the preceding non-silent block started near 0 (i.e. there was
+        # actual audio content from the beginning, not just speech that paused).
+        prev_silence_end = silence_ends[i - 1] if i > 0 else 0.0
+        non_silent_block_start = prev_silence_end  # audio resumes here
+        # If non-silent block started after 0.5s the intro audio began early
+        # and this is a valid intro boundary.
+        if non_silent_block_start < 0.5:
             return end_time
 
     return 0.0  # No intro detected

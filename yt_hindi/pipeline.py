@@ -253,6 +253,18 @@ def run_pipeline(
         generate_srt(translated, srt_path, language="hi")
         console.print(f"[yellow]Generated subtitles: {srt_path.name}[/yellow]")
 
+        # Validate intro_offset against actual transcript: if speech starts before
+        # the detected intro boundary, silence detection found a speech pause, not
+        # an actual intro.  Clamp intro_offset to where speech truly begins.
+        if intro_offset > 0 and translated:
+            first_speech_start = translated[0].start
+            if first_speech_start < intro_offset:
+                intro_offset = first_speech_start
+                console.print(
+                    f"[yellow]Intro offset clamped to {intro_offset:.1f}s "
+                    f"(speech starts at {first_speech_start:.1f}s)[/yellow]"
+                )
+
         # Adjust segments for intro offset (keeps original audio during intro)
         if intro_offset > 0:
             adjusted_translated = []

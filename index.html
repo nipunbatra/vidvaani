@@ -833,6 +833,10 @@
         <div class="section-header">
             <div class="section-eyebrow">TTS Providers</div>
             <h2 class="section-title">Voice backend comparison</h2>
+            <p class="section-desc">
+                Cost estimates assume a 1-hour lecture (~90K Hindi characters after translation),
+                with a conservative 2× multiplier for testing and retries.
+            </p>
         </div>
 
         <div class="table-wrap">
@@ -842,7 +846,8 @@
                         <th>Provider</th>
                         <th>Available Voices</th>
                         <th>Hindi Quality</th>
-                        <th>Cost / 10K chars</th>
+                        <th>Rate</th>
+                        <th>Est. 1-hour video</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -850,29 +855,37 @@
                         <td><span class="badge b-sarvam" style="font-size:0.75rem;">Sarvam Bulbul v2</span></td>
                         <td>Abhilash, Karun, Hitesh, Vidya, Anushka, Manisha, Arya</td>
                         <td>Native Indian accent, natural prosody</td>
-                        <td>₹15 / 10K chars (~$0.18)</td>
+                        <td>₹15 / 10K chars</td>
+                        <td>~₹270 ($3)</td>
                     </tr>
                     <tr>
                         <td><span class="badge b-sarvam" style="font-size:0.75rem;">Sarvam Bulbul v3 β</span></td>
                         <td>Same voices, improved model</td>
                         <td>Better naturalness, still in beta</td>
-                        <td>₹30 / 10K chars (~$0.36)</td>
+                        <td>₹30 / 10K chars</td>
+                        <td>~₹540 ($6.5)</td>
                     </tr>
                     <tr>
                         <td><span class="badge b-gemini" style="font-size:0.75rem;">Gemini 2.5 Flash TTS</span></td>
                         <td>Aoede, Charon, Fenrir, Kore, Puck</td>
                         <td>Excellent naturalness, slight Western accent</td>
                         <td>$0.04 / 10K chars</td>
+                        <td>~$0.72</td>
                     </tr>
                     <tr>
                         <td><span class="badge b-edge" style="font-size:0.75rem;">Edge TTS</span></td>
                         <td>Madhur (M), Swara (F)</td>
                         <td>Good, slightly robotic</td>
                         <td>Free</td>
+                        <td>Free</td>
                     </tr>
                 </tbody>
             </table>
         </div>
+        <p style="font-size:0.78rem; color:var(--text-3); margin-top:10px;">
+            Translation cost (Gemini 2.0 Flash) adds ~$0.01–0.05 per lecture regardless of TTS choice.
+            Costs are cached — re-runs with the same transcript are free.
+        </p>
 
     </main>
 

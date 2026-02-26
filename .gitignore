@@ -1,7 +1,8 @@
 # Output files
 output/
 output_*/
-demo_videos/
+# demo_videos tracked selectively below
+demo_videos/linear_regression/
 
 # Samples (can regenerate)
 samples/

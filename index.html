@@ -391,6 +391,13 @@
             color: #fdba74;
         }
 
+        .callout-info {
+            background: rgba(99,102,241,0.08);
+            border: 1px solid rgba(99,102,241,0.2);
+            color: var(--text-2);
+        }
+        .callout-info strong { color: var(--text); }
+
         .callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
         .callout strong { font-weight: 600; }
 
@@ -499,34 +506,239 @@
             margin-bottom: 14px;
         }
 
+        /* ── NAV ── */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: rgba(8,9,14,0.72);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        .nav-brand span { color: var(--indigo-light); }
+
+        .nav-links { display: flex; gap: 4px; align-items: center; }
+        .nav-links a {
+            font-size: 0.85rem;
+            color: var(--text-2);
+            text-decoration: none;
+            padding: 7px 13px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: color 0.15s, background 0.15s;
+        }
+        .nav-links a:hover { color: var(--text); background: var(--surface); }
+        .nav-links a.nav-cta { background: var(--indigo); color: #fff; }
+        .nav-links a.nav-cta:hover { background: var(--indigo-light); }
+
+        /* ── BUTTONS ── */
+        .hero-cta {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 46px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 100px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s, border-color 0.15s;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--indigo), var(--violet));
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(99,102,241,0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 34px rgba(99,102,241,0.42); }
+        .btn-ghost {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .btn-ghost:hover { border-color: var(--border-accent); background: var(--surface-2); }
+
+        /* ── LEAD / WHY ── */
+        .lead {
+            max-width: 730px;
+            font-size: 1.06rem;
+            color: var(--text-2);
+            line-height: 1.75;
+        }
+        .lead strong { color: var(--text); font-weight: 600; }
+        .lead + .lead { margin-top: 16px; }
+
+        /* ── STATS ── */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 34px;
+        }
+        .stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px 20px;
+            text-align: center;
+        }
+        .stat-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, var(--indigo-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+        .stat-label { font-size: 0.82rem; color: var(--text-3); line-height: 1.45; }
+
+        /* ── STEPS ── */
+        .steps { display: grid; gap: 14px; }
+        .step {
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 22px;
+            transition: border-color 0.2s;
+        }
+        .step:hover { border-color: var(--border-accent); }
+        .step-num {
+            flex-shrink: 0;
+            width: 34px; height: 34px;
+            border-radius: 9px;
+            background: rgba(99,102,241,0.12);
+            border: 1px solid var(--border-accent);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: var(--indigo-light);
+            font-size: 0.95rem;
+        }
+        .step-body h3 {
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .step-body p { font-size: 0.88rem; color: var(--text-2); line-height: 1.6; }
+        .step-body code, .lead code, .section-desc code {
+            font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+            background: var(--bg-3);
+            padding: 1px 6px;
+            border-radius: 5px;
+            font-size: 0.82em;
+            color: var(--indigo-light);
+        }
+
+        /* ── CODE BLOCK ── */
+        .code-block {
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .code-head {
+            display: flex; align-items: center; gap: 7px;
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .code-dot { width: 11px; height: 11px; border-radius: 50%; }
+        .code-head span {
+            margin-left: 8px;
+            font-size: 0.78rem;
+            color: var(--text-3);
+            font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+        }
+        .code-body {
+            padding: 18px 20px;
+            font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+            font-size: 0.85rem;
+            line-height: 1.95;
+            overflow-x: auto;
+            white-space: pre;
+            color: var(--text);
+        }
+        .code-body .c-comment { color: var(--text-3); }
+        .code-body .c-cmd { color: var(--emerald); }
+        .code-body .c-flag { color: var(--indigo-light); }
+        .code-body .c-str { color: #fcd34d; }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 900px) {
             .compare-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 640px) {
-            .hero { padding: 60px 16px 50px; }
+            .hero { padding: 54px 16px 46px; }
             .container { padding: 40px 16px; }
             .demo-body { padding: 16px; }
             .voice-grid { grid-template-columns: 1fr; }
             .pipe-arrow { display: none; }
             .pipeline { gap: 12px; }
+            .nav-links a:not(.nav-cta) { display: none; }
+            .nav { padding: 11px 16px; }
+            .step { padding: 16px 18px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- ── NAV ──────────────────────────────────────────── -->
+    <nav class="nav">
+        <a href="#top" class="nav-brand">Vid<span>Vaani</span></a>
+        <div class="nav-links">
+            <a href="#demos">Demos</a>
+            <a href="#how">How it works</a>
+            <a href="#voices">Voices</a>
+            <a href="#quickstart">Quickstart</a>
+            <a href="#faq">FAQ</a>
+            <a href="https://github.com/nipunbatra/vidvaani" target="_blank" class="nav-cta">GitHub</a>
+        </div>
+    </nav>
+
     <!-- ── HERO ─────────────────────────────────────────── -->
-    <header class="hero">
+    <header class="hero" id="top">
         <div class="hero-label">
             <span>Research Demo &nbsp;·&nbsp;</span> IIT Gandhinagar &nbsp;·&nbsp; Sustainability Lab
         </div>
 
         <h1><span class="hero-title-main">VidVaani</span></h1>
         <p class="hero-sub">
-            AI-powered dubbing pipeline — translate and dub <strong>any video</strong>
-            into <strong>any language</strong>, with authentic regional voices.
+            Turn any English lecture into a <strong>naturally-dubbed Hindi</strong> video —
+            with authentic Indian voices, subtitles, and audio kept <strong>in sync with the slides</strong>.
         </p>
+
+        <div class="hero-cta">
+            <a href="#demos" class="btn btn-primary">▶ Watch the demos</a>
+            <a href="#quickstart" class="btn btn-ghost">Run it yourself</a>
+        </div>
 
         <div class="stack-pills">
             <div class="pill"><span class="pill-dot dot-blue"></span>MLX Whisper</div>
@@ -572,13 +784,41 @@
 
     <main class="container">
 
-        <!-- ── DEMO 01: VOICE COMPARISON ─────────────────── -->
+        <!-- ── WHY ───────────────────────────────────────── -->
         <div class="section-header">
+            <div class="section-eyebrow">The problem</div>
+            <h2 class="section-title">India's best STEM lectures are locked in English</h2>
+        </div>
+        <p class="lead">
+            NPTEL, IIT, and MOOC lectures are a goldmine — but for the millions of students who think in Hindi,
+            a fast English lecture is a barrier, not a resource. Manual dubbing is slow and costly, and
+            YouTube's own auto-dubbing is <strong>enabled only for a handful of large channels</strong> — never
+            for academic content.
+        </p>
+        <p class="lead">
+            <strong>VidVaani</strong> dubs <em>any</em> video — a YouTube link, a local file, or a private
+            lecture — into natural spoken Hindi in minutes. It keeps technical terms in English (real students
+            say <code>gradient</code>, not <code>प्रवणता</code>), preserves the original intro music, and
+            time-aligns every sentence so the narration still matches what's on screen.
+        </p>
+
+        <div class="stats">
+            <div class="stat"><div class="stat-num">≈ ₹8</div><div class="stat-label">to dub a 7-min lecture with Sarvam AI</div></div>
+            <div class="stat"><div class="stat-num">7</div><div class="stat-label">native Indian voices, male &amp; female</div></div>
+            <div class="stat"><div class="stat-num">3</div><div class="stat-label">TTS backends — one completely free</div></div>
+            <div class="stat"><div class="stat-num">Any</div><div class="stat-label">video URL or local file, no allowlist</div></div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- ── DEMO 01: VOICE COMPARISON ─────────────────── -->
+        <div class="section-header" id="demos">
             <div class="section-eyebrow">Demo 01 — Voice Comparison</div>
             <h2 class="section-title">All TTS Voices, Side-by-Side</h2>
             <p class="section-desc">
-                A 58-second calculus clip dubbed in every available voice — Sarvam AI, Gemini TTS, and a direct
-                comparison with Sarvam's own Dashboard product.
+                One 58-second calculus clip, dubbed in every available voice. Play the original first, then
+                compare — notice how <strong>VidVaani keeps "area" and "integral" in English</strong>, while
+                <strong>Sarvam's own Dashboard</strong> renders them as pure Hindi (क्षेत्रफल, समाकलन).
                 Source: <a href="https://www.youtube.com/watch?v=UuoVhUqWAFc" target="_blank" style="color:var(--indigo-light)">2D Integration with GeoGebra</a>
             </p>
         </div>
@@ -663,7 +903,9 @@
             <div class="section-eyebrow">Demo 02 — Full Lecture</div>
             <h2 class="section-title">NPTEL Deep Learning — Lecture 1.1</h2>
             <p class="section-desc">
-                7-minute NPTEL lecture on biological neurons, fully dubbed in Hindi across multiple voices.
+                A full 7-minute NPTEL lecture on biological neurons, dubbed end-to-end across five voices.
+                Play the two side-by-side and watch the narration stay <strong>locked to the slides</strong> —
+                intro music preserved, pauses intact, technical terms in English.
                 Source: <a href="https://www.youtube.com/watch?v=4TC5s_xNKSs" target="_blank" style="color:var(--indigo-light)">Prof. Mitesh Khapra, IIT Madras</a>
             </p>
         </div>
@@ -756,6 +998,64 @@
 
         <hr class="divider">
 
+        <!-- ── HOW IT WORKS ──────────────────────────────── -->
+        <div class="section-header" id="how">
+            <div class="section-eyebrow">How it works</div>
+            <h2 class="section-title">Six stages, fully automated</h2>
+            <p class="section-desc">
+                Give it a URL. Everything below runs end-to-end — transcript, translation, and audio are all
+                cached, so re-running with a different voice is nearly instant.
+            </p>
+        </div>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-body">
+                    <h3>Download &amp; detect the intro</h3>
+                    <p><code>yt-dlp</code> fetches the video, then ffmpeg's <code>silencedetect</code> finds where
+                    the intro music ends — so dubbing begins on the first spoken word and the original opening is left untouched.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-body">
+                    <h3>Transcribe with Whisper</h3>
+                    <p>MLX Whisper runs on-device (Apple Silicon) to produce time-stamped English segments — no audio leaves the machine at this stage.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-body">
+                    <h3>Translate to spoken Hindi</h3>
+                    <p>Gemini 2.0 Flash translates each segment into natural, conversational Hindi — kept concise and prompted to be speakable in the same time as the original, with technical terms left in English.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div class="step-body">
+                    <h3>Synthesize the voice</h3>
+                    <p>Your chosen backend — Sarvam AI, Gemini TTS, or free Edge TTS — generates Hindi audio for every segment in parallel. Results are cached, so swapping voices doesn't re-translate.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">5</div>
+                <div class="step-body">
+                    <h3>Match duration &amp; preserve sound</h3>
+                    <p>Each clip is time-stretched or padded to fit its exact slot, so the narration stays aligned with the slides. Original audio is kept during pauses and non-speech for a natural result.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">6</div>
+                <div class="step-body">
+                    <h3>Assemble the final video</h3>
+                    <p>ffmpeg stitches the dubbed track back onto the video and, optionally, burns in Hindi subtitles — you also get a standalone <code>.srt</code> file.</p>
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
         <!-- ── FEATURES ──────────────────────────────────── -->
         <div class="section-header">
             <div class="section-eyebrow">Capabilities</div>
@@ -798,7 +1098,7 @@
         <hr class="divider">
 
         <!-- ── TTS TABLE ─────────────────────────────────── -->
-        <div class="section-header">
+        <div class="section-header" id="voices">
             <div class="section-eyebrow">TTS Providers</div>
             <h2 class="section-title">Voice backend comparison</h2>
             <p class="section-desc">
@@ -857,8 +1157,38 @@
 
         <hr class="divider">
 
+        <!-- ── QUICKSTART ────────────────────────────────── -->
+        <div class="section-header" id="quickstart">
+            <div class="section-eyebrow">Quickstart</div>
+            <h2 class="section-title">Run it yourself</h2>
+            <p class="section-desc">
+                Needs Python 3.11+, ffmpeg, and a <code>GEMINI_API_KEY</code>
+                (add <code>SARVAM_API_KEY</code> for the native Indian voices).
+            </p>
+        </div>
+
+        <div class="code-block">
+            <div class="code-head">
+                <span class="code-dot" style="background:#f43f5e"></span>
+                <span class="code-dot" style="background:#f59e0b"></span>
+                <span class="code-dot" style="background:#10b981"></span>
+                <span>terminal</span>
+            </div>
+            <div class="code-body"><span class="c-comment"># 1 — install</span>
+git clone https://github.com/nipunbatra/vidvaani.git
+cd vidvaani && uv sync
+
+<span class="c-comment"># 2 — quick demo (first 5 segments)</span>
+<span class="c-cmd">yt-hindi</span> dub <span class="c-str">"https://youtube.com/watch?v=VIDEO_ID"</span>
+
+<span class="c-comment"># 3 — full lecture, native Hindi voice + burned-in subtitles</span>
+<span class="c-cmd">yt-hindi</span> dub <span class="c-str">"https://youtube.com/watch?v=VIDEO_ID"</span> <span class="c-flag">--full</span> <span class="c-flag">-b</span> sarvam <span class="c-flag">-v</span> abhilash</div>
+        </div>
+
+        <hr class="divider">
+
         <!-- ── FAQ ──────────────────────────────────────────── -->
-        <div class="section-header">
+        <div class="section-header" id="faq">
             <div class="section-eyebrow">FAQ</div>
             <h2 class="section-title">Why not just use YouTube's dubbing?</h2>
         </div>

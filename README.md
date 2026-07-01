@@ -153,7 +153,7 @@ output/
 
 ## Demo
 
-Open `demo.html` in a browser to see example dubbed videos.
+Open `index.html` in a browser to see example dubbed videos.
 
 ## Examples
 

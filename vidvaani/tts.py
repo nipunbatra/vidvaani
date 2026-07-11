@@ -71,37 +71,66 @@ def get_audio_duration(path: Path) -> float:
         return 0.0
 
 
+def trim_trailing_silence(path: Path, threshold_db: int = -45) -> Path:
+    """Remove trailing silence from a TTS clip (in place).
+
+    TTS backends often append silence; measuring duration with it inflates
+    the apparent overrun and causes needless speed-up of actual speech.
+    """
+    trimmed = path.with_name(path.stem + "_trim" + path.suffix)
+    cmd = [
+        "ffmpeg", "-y", "-i", str(path),
+        "-af",
+        f"areverse,silenceremove=start_periods=1:start_threshold={threshold_db}dB:start_silence=0.15,areverse",
+        str(trimmed)
+    ]
+    result = subprocess.run(cmd, capture_output=True)
+    if result.returncode == 0 and get_audio_duration(trimmed) > 0:
+        subprocess.run(["mv", str(trimmed), str(path)], check=True)
+    else:
+        trimmed.unlink(missing_ok=True)
+    return path
+
+
 def adjust_audio_duration(
     input_path: Path,
     output_path: Path,
     target_duration: float,
-    min_speed: float = 0.85,
-    max_speed: float = 1.25
+    min_speed: float = 0.95,
+    max_speed: float = 1.35,
+    max_duration: float | None = None
 ) -> Path:
     """Adjust audio duration using ffmpeg atempo filter + padding.
 
-    Strategy:
-    - If Hindi is shorter: slow down (to min_speed) then pad with silence
-    - If Hindi is longer: speed up (to max_speed) then truncate if needed
-    - Preserves pitch while changing duration
-    - Limits speed range for more natural sound
+    Strategy (asymmetric, following the dubbing literature: listeners
+    tolerate sped-up speech far better than slowed-down speech, and
+    prefer broken timing over deleted content):
+    - If Hindi is shorter: slow down slightly (to min_speed) then pad with silence
+    - If Hindi is longer: speed up (to max_speed); rather than truncating,
+      let the clip spill into the trailing pause up to max_duration.
+      Truncation only happens as a last resort at max_duration.
 
     Args:
         input_path: Input audio file
         output_path: Output audio file
-        target_duration: Target duration in seconds
-        min_speed: Minimum speed multiplier (default 0.85 = 15% slower)
-        max_speed: Maximum speed multiplier (default 1.25 = 25% faster)
+        target_duration: Target (slot) duration in seconds
+        min_speed: Minimum speed multiplier (default 0.95 = 5% slower)
+        max_speed: Maximum speed multiplier (default 1.35 = 35% faster)
+        max_duration: Absolute cap including trailing-pause slack
+            (default: target_duration)
     """
     actual_duration = get_audio_duration(input_path)
     if actual_duration == 0:
         subprocess.run(["cp", str(input_path), str(output_path)], check=True)
         return output_path
 
+    if max_duration is None:
+        max_duration = target_duration
+
     ratio = actual_duration / target_duration
 
     # If already close enough, skip adjustment
-    if 0.95 <= ratio <= 1.05:
+    if 0.95 <= ratio <= 1.05 and actual_duration <= max_duration:
         subprocess.run(["cp", str(input_path), str(output_path)], check=True)
         return output_path
 
@@ -129,7 +158,8 @@ def adjust_audio_duration(
                 "-vn", str(output_path)
             ]
     else:
-        # Hindi is longer than target - speed up then truncate
+        # Hindi is longer than target - speed up, spill into trailing
+        # pause if available, truncate only at the hard cap.
         speed_factor = min(max_speed, ratio)
 
         # Chain atempo filters if needed (each limited to 0.5-2.0)
@@ -145,9 +175,11 @@ def adjust_audio_duration(
         cmd = [
             "ffmpeg", "-y", "-i", str(input_path),
             "-filter:a", f"{filter_str},loudnorm=I=-16:TP=-1.5:LRA=11",
-            "-t", str(target_duration),  # Truncate if still too long
-            "-vn", str(output_path)
         ]
+        if actual_duration / speed_factor > max_duration:
+            # Last resort: content would overrun even the trailing pause.
+            cmd += ["-t", str(max_duration)]
+        cmd += ["-vn", str(output_path)]
 
     subprocess.run(cmd, check=True, capture_output=True)
     return output_path
@@ -158,7 +190,7 @@ def synthesize_gemini(
     output_path: Path,
     voice: str = "Kore",
     model: str = "gemini-2.5-flash-preview-tts",
-    max_retries: int = 3
+    max_retries: int = 5
 ) -> Path:
     """Synthesize speech using Gemini TTS API.
 
@@ -178,9 +210,13 @@ def synthesize_gemini(
 
     for attempt in range(max_retries):
         try:
+            # Bare short inputs (e.g. a lone "धन्यवाद।") can come back empty
+            # with finish_reason OTHER; a "Say: " prefix fixes it and is not
+            # spoken, so use it on retries.
+            contents = text if attempt == 0 else f"Say: {text}"
             response = client.models.generate_content(
                 model=model,
-                contents=text,
+                contents=contents,
                 config=types.GenerateContentConfig(
                     response_modalities=["AUDIO"],
                     speech_config=types.SpeechConfig(
@@ -202,13 +238,20 @@ def synthesize_gemini(
             break
         except Exception as e:
             if attempt < max_retries - 1:
-                time.sleep(2 ** attempt)  # Exponential backoff
+                # Empty responses usually mean rate limiting on the preview
+                # TTS model - back off long enough for the RPM window.
+                time.sleep(min(30, 2 * 2 ** attempt))
                 continue
             raise
 
-    # Track TTS cost
+    # Track TTS cost from actual token usage (priced per token, not per char)
     tracker = CostTracker.get()
-    tracker.add_tts(len(text))
+    usage = getattr(response, "usage_metadata", None)
+    tracker.add_tts(
+        len(text),
+        input_tokens=(getattr(usage, "prompt_token_count", 0) or 0),
+        audio_tokens=(getattr(usage, "candidates_token_count", 0) or 0),
+    )
 
     # Write raw audio data to temp file
     raw_path = output_path.with_suffix(".raw")
@@ -258,7 +301,7 @@ def synthesize_sarvam(
         text: Text to synthesize (Hindi)
         output_path: Output file path
         voice: Voice name (anushka, manisha, vidya, arya, abhilash, karun, hitesh)
-        pace: Speech pace (0.5-2.0, default 1.0)
+        pace: Speech pace (0.3-3.0, default 1.0)
         pitch: Voice pitch (-0.75 to 0.75, default 0.0)
         max_retries: Number of retries on failure
 
@@ -352,7 +395,8 @@ def synthesize_segment(
     target_duration: float,
     output_path: Path,
     voice: str = "Kore",
-    backend: Literal["gemini", "edge", "sarvam"] = "gemini"
+    backend: Literal["gemini", "edge", "sarvam"] = "gemini",
+    max_duration: float | None = None
 ) -> AudioSegment:
     """Synthesize a segment with duration matching.
 
@@ -362,6 +406,7 @@ def synthesize_segment(
         output_path: Output file path
         voice: Voice name (Gemini: Aoede/Charon/Fenrir/Kore/Puck, Edge: male/female, Sarvam: abhilash/anushka/etc)
         backend: TTS backend to use
+        max_duration: Absolute cap including trailing-pause slack
 
     Returns:
         AudioSegment with actual duration info
@@ -378,11 +423,15 @@ def synthesize_segment(
         else:
             synthesize_edge_sync(text, tmp_path, voice)
 
+        # Trim trailing silence so we don't speed up speech to make
+        # room for silence.
+        trim_trailing_silence(tmp_path)
         actual_duration = get_audio_duration(tmp_path)
 
         # Adjust if needed
         if actual_duration > 0 and abs(actual_duration - target_duration) > 0.1:
-            adjust_audio_duration(tmp_path, output_path, target_duration)
+            adjust_audio_duration(tmp_path, output_path, target_duration,
+                                  max_duration=max_duration)
         else:
             subprocess.run(["cp", str(tmp_path), str(output_path)], check=True)
 
@@ -434,6 +483,10 @@ class TTSJob:
     start: float
     end: float
     output_path: Path
+    # Latest time this segment may run to (start of the next segment);
+    # lets overlong audio spill into the trailing pause instead of
+    # being truncated.
+    max_end: float | None = None
 
 
 def synthesize_batch_parallel(
@@ -460,12 +513,14 @@ def synthesize_batch_parallel(
 
     def process_job(job: TTSJob) -> tuple[int, Path, float, float]:
         target_duration = job.end - job.start
+        max_duration = (job.max_end - job.start) if job.max_end else None
         segment = synthesize_segment(
             job.text,
             target_duration,
             job.output_path,
             voice=voice,
-            backend=backend
+            backend=backend,
+            max_duration=max_duration
         )
         return job.index, segment.path, job.start, job.end
 
@@ -473,10 +528,17 @@ def synthesize_batch_parallel(
         futures = {executor.submit(process_job, job): job for job in jobs}
 
         for future in as_completed(futures):
-            idx, path, start, end = future.result()
-            results[idx] = (path, start, end)
+            job = futures[future]
+            try:
+                idx, path, start, end = future.result()
+                results[idx] = (path, start, end)
+            except Exception as e:
+                # A single failed segment should not kill the whole run;
+                # the assembler keeps the original audio for missing segments.
+                print(f"[warning] TTS failed for segment at {job.start:.1f}s "
+                      f"({job.text[:40]!r}...): {e}")
             completed += 1
             if progress_callback:
                 progress_callback(completed, len(jobs))
 
-    return results
+    return [r for r in results if r is not None]

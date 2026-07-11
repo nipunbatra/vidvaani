@@ -1,0 +1,254 @@
+---
+marp: true
+theme: acad
+paginate: true
+header: "VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar"
+title: "VidVaani: Automated Hindi Dubbing of Technical Lectures"
+---
+
+<!-- _class: title -->
+<!-- _header: "" -->
+
+# VidVaani
+
+<p class="subtitle">Automated, low-cost dubbing of English technical lectures into Hindi</p>
+
+<p class="author">Nipun Batra</p>
+<p class="affil">Computer Science &amp; Engineering, IIT Gandhinagar</p>
+
+<p class="date">July 2026 · github.com/nipunbatra/vidvaani · nipunbatra.github.io/vidvaani</p>
+
+---
+
+# The problem: technical education is locked in English
+
+- India's best engineering lectures — NPTEL alone hosts **50,000+ hours** — are overwhelmingly in English.
+- A large fraction of our students think and learn in Hindi and other Indian languages; a fast English lecture is a barrier, not a resource.
+- **NEP 2020** explicitly calls for higher education content in Indian languages.
+- Manual dubbing is slow and expensive: NPTEL's human-verified translation effort has taken years to cover a subset of courses in 11 languages.
+
+> **Goal:** given any lecture video, produce a natural-sounding Hindi version in minutes, for rupees — with the technical vocabulary students actually use.
+
+<div class="foot">NPTEL translation initiative: nptel.ac.in/translation · Bhashini (MeitY) has dubbed ~200 NPTEL/SWAYAM courses in 8 languages via human-in-the-loop workflows.</div>
+
+---
+
+# Existing options do not fit the lecture use case
+
+| Option | Cost | Why it falls short |
+|---|---|---|
+| YouTube auto-dubbing | Free | Only the **channel owner** can enable it; dubs are uneditable; no control over voice or terminology; widely criticised as robotic |
+| Commercial dubbing SaaS (ElevenLabs, Rask, HeyGen, Dubverse, Murf) | **₹3,000–11,000 per lecture** | Priced for short marketing clips; monthly minute caps; each extra language billed again |
+| Azure Video Translation | ≈ ₹2,000 per lecture | Cheapest managed option, but limited voice choice and no terminology control |
+| NPTEL / Bhashini human pipelines | Government-funded | High quality but slow, course-by-course; not self-serve |
+
+**The gap:** a self-serve tool an instructor can point at *any* video, with control over voice and vocabulary, at commodity API prices.
+
+<div class="foot">Pricing surveyed July 2026 from official pages (elevenlabs.io/pricing, rask.ai/pricing, heygen.com, dubverse.ai/pricing, azure.microsoft.com/pricing/details/speech). 1 USD = ₹95.4.</div>
+
+---
+
+# VidVaani: a six-stage open pipeline
+
+![w:1120](figures/pipeline.svg)
+
+- Single command: `vidvaani dub <URL> --full -b sarvam -v abhilash`
+- Transcription runs **on-device** (MLX Whisper on Apple Silicon) — audio never leaves the machine until translation.
+- Every intermediate artifact is cached: re-dubbing with a new voice skips download, transcription, and translation.
+
+---
+
+# Stage design choices
+
+| Stage | Tool | Design choice |
+|---|---|---|
+| Download | `yt-dlp` | Works on any YouTube URL or local file — no allowlist |
+| Intro detection | `ffmpeg silencedetect` | Music/intro is **preserved**, dubbing starts at first speech |
+| Transcription | MLX Whisper (`distil-large-v3`) | Local, free, time-stamped segments (grouped to ≤ 15 s) |
+| Translation | Gemini 2.5 Flash | Segment-batched, JSON-structured, duration-aware prompt |
+| Speech synthesis | Sarvam `bulbul:v2` / Gemini TTS / Edge TTS | Native Indian voices; parallel synthesis with per-segment caching |
+| Assembly | `ffmpeg` | Duration matching + original audio preserved during pauses |
+
+---
+
+# Translation that respects the clock — and the classroom
+
+Constraints in the translation prompt: *speakable in the same duration; conversational (not literary) Hindi; technical terms stay in English.*
+
+| | Original (English) | VidVaani (Hindi) |
+|---|---|---|
+| 0:00 | "Hello everyone, welcome to lecture 1 of **CS7015** which is the course on **deep learning**." | "सभी को नमस्कार, **CS7015** के पहले लेक्चर में आपका स्वागत है, जो **डीप लर्निंग** का कोर्स है।" |
+| 0:30 | "…we hear the terms **artificial neural networks**, artificial neurons quite often these days." | "…आजकल हम '**आर्टिफिशियल न्यूरल नेटवर्क**', 'आर्टिफिशियल न्यूरॉन्स' जैसे शब्द अक्सर सुनते हैं।" |
+
+Students say *gradient* and *neural network* — a dub that renders them as प्रवणता and तंत्रिका जाल (as fully-literal systems do) sounds foreign to the very audience it serves.
+
+<div class="foot">Rows taken verbatim from a pipeline run on NPTEL CS7015 Lecture 1.1 (Prof. Mitesh Khapra, IIT Madras), July 2026.</div>
+
+---
+
+# Fitting Hindi speech into English timing
+
+Hindi runs ~15–35% longer than English. Per segment, following the automatic-dubbing literature:
+
+1. The translator gets a **word budget** (≈ 1.8 × seconds, ~110 wpm spoken Hindi) — fixing length at translation time beats stretching audio afterwards.
+2. Synthesize at natural pace, trim trailing silence, measure with `ffprobe`.
+3. If it fits (±5%) — done. Otherwise speed-adjust with an **asymmetric clamp (0.95×–1.35×)**: listeners tolerate faster speech far better than slowed speech.
+4. Still too long? The clip **spills into the trailing pause** rather than being cut — professional dubs sacrifice timing, never content.
+5. During pauses, the **original soundtrack plays** — atmosphere and intro music survive the dub.
+
+<div class="foot">Design informed by the dubbing literature: Federico et al. 2020 (arXiv:2001.06785), Virkar et al. 2022 (arXiv:2204.02530), "Dubbing in Practice" TACL 2023 (arXiv:2212.12137). Details: docs/timing-alignment.md in the repo.</div>
+
+---
+
+# Measured performance — faster than real time
+
+![w:1080](figures/timing_breakdown.png)
+
+A **7-minute lecture dubs in 2½–4 minutes** end-to-end on a laptop — the bottleneck is the translation API, not synthesis. Re-runs with a different voice take under a minute (cached transcript + translation).
+
+<div class="foot">Fresh run shown, NPTEL CS7015 Lec 1.1 (417 s video, 33 segments), Sarvam backend, Apple Silicon, July 2026. A second fresh run totalled 242 s — the spread is translation-API latency.</div>
+
+---
+
+# Measured cost — rupees, not lakhs
+
+Measured on the same 7-minute lecture (5,307 Hindi characters):
+
+| | Translation | Hindi TTS | Total (7 min) | Extrapolated, 1 hour |
+|---|---|---|---|---|
+| Sarvam `bulbul:v2` | ₹1.4 | ₹8.0 | **₹9.4** ($0.10) | ≈ ₹80 |
+| Gemini 2.5 Flash TTS | ₹1.4 | ₹9.6 | **₹11.0** ($0.12) | ≈ ₹95 |
+| Edge TTS (free tier) | ₹1.4 | ₹0 | **₹1.4** | ≈ ₹12 |
+
+- A full **40-lecture course ≈ ₹3,200–4,400** — less than one SaaS-dubbed lecture.
+- Costs measured by the pipeline itself from API-reported token counts, at official July 2026 prices.
+- Conservative: after adding word budgets to the translation, the same lecture re-ran at **₹6.7**.
+
+<div class="foot">Sarvam: ₹15/10,000 chars (docs.sarvam.ai). Gemini TTS: $0.50/1M text + $10/1M audio tokens; translation $0.30/$2.50 per 1M (ai.google.dev/gemini-api/docs/pricing). 1 USD = ₹95.4.</div>
+
+---
+
+# Where this sits in the market
+
+![w:1080](figures/cost_comparison.png)
+
+<div class="foot">Midpoints of published prices, single target language, July 2026. YouTube auto-dubbing is free but channel-owner-only with no editorial control. Papercup/RWS (human-in-loop enterprise) quotes custom prices well above this scale.</div>
+
+---
+
+# Why not just use the platforms?
+
+<div class="cols">
+<div>
+
+## YouTube auto-dubbing
+- Now rolled out to all channels — **but only the uploader** can enable it.
+- A university cannot dub NPTEL or MIT content it does not own.
+- Dubs cannot be edited — a mistranslated technical term can only be unpublished, not fixed.
+
+</div>
+<div>
+
+## Sarvam Studio &amp; SaaS dubbers
+- Produce formal, fully-translated Hindi (क्षेत्रफल for "area") — jarring for STEM learners used to Hinglish.
+- No control over segment-level phrasing or terminology.
+- VidVaani uses the **same Sarvam voices** with full editorial control, at API prices.
+
+</div>
+</div>
+
+> Notably, the popular open-source dubbing tools (pyvideotrans ★18k, VideoLingo ★17k) integrate **no Indian-language TTS at all** — VidVaani fills a real gap.
+
+---
+
+# What a run looks like
+
+```text
+$ vidvaani dub "https://youtube.com/watch?v=4TC5s_xNKSs" --full -b sarvam -v anushka
+
+  Downloaded: Deep Learning(CS7015): Lec 1.1 Biological Neuron
+  Transcribed: 33 segments          Generated subtitles: 4TC5s_xNKSs_hindi.srt
+  TTS: 33/33 segments (parallel)    Created: 4TC5s_xNKSs_hindi_anushka.mp4
+
+            Timing Breakdown                        API Costs
+  Download          5.2s    3.3%          Translation   9,542 tokens   $0.015
+  Transcription    20.4s   12.8%          TTS (Sarvam)  5,307 chars    Rs 7.96
+  Translation      79.0s   49.6%          Total                        Rs 9.4
+  TTS Generation   17.9s   11.2%
+  Video Assembly   36.5s   22.9%
+  Total           159.2s    100%
+```
+
+Every run reports its own timing and cost — the numbers on the previous slides are this output, not estimates.
+
+---
+
+# Demonstrations
+
+<div class="cols">
+<div>
+
+**nipunbatra.github.io/vidvaani** — plays in any browser:
+
+1. **58-second calculus clip, five ways** — original, Sarvam and Gemini voices, plus Sarvam's own Dashboard output for direct comparison.
+2. **Full 7-minute NPTEL lecture** — original beside Hindi dub; intro music preserved; five voices; burned-in subtitles.
+
+What to listen for:
+
+- Technical terms stay in English (*deep learning*, *CS7015*).
+- Pauses land where the professor pauses.
+- Native Indian prosody (Sarvam) vs. slight Western accent (Gemini).
+
+</div>
+<div>
+
+![w:460](figures/demo_frame.jpg)
+<p class="cap">Dubbed lecture with generated Hindi subtitles burned in.</p>
+
+![w:150](figures/qr_demo.png)
+<p class="cap">Scan to open the demo page.</p>
+
+</div>
+</div>
+
+---
+
+# Honest limitations
+
+- **No human review loop yet** — NPTEL's own effort treats faculty verification as essential for pedagogy; ₹80/lecture buys the draft, not the sign-off.
+- **Timing fit is still partly post-hoc** — word budgets plus a 0.95–1.35× speed clamp handle most segments, but very dense passages can still sound hurried (see next slide).
+- Gemini TTS models are **preview** — pricing and behaviour may change; Edge TTS is an unofficial free endpoint, fine for prototyping only.
+- No lip-sync and no voice cloning of the original lecturer (the latter also needs consent workflows).
+- Hindi first; Sarvam voices cover 11 Indian languages, so extension is natural.
+
+---
+
+# Roadmap: smarter time alignment
+
+We surveyed the automatic-dubbing literature (Amazon, Microsoft, IIT Madras, IWSLT) and re-based the alignment design on it — full notes in `docs/timing-alignment.md`:
+
+**Already implemented** — word budgets in the translation prompt; asymmetric speed clamp; spill-into-pause instead of truncation; trailing-silence trimming.
+
+**Next:**
+
+1. **TTS-native pace instead of waveform stretching** — Sarvam exposes `pace` (0.3–3.0×); synthesis at the right speed beats resampling in every published comparison.
+2. **Re-translate outliers once** — segments still needing > 1.3× speed get one "shorten by 25%" LLM pass; ~25% of En→Hi segments are expected to qualify.
+3. **Sentence-boundary segmentation** with word-level timestamps (≈ +4.5 BLEU over blind packing).
+4. **Terminology glossary** carried across translation batches for consistency.
+5. **Evaluation study** — student MOS ratings and comprehension quizzes, Hindi dub vs. English original.
+
+---
+
+# Summary
+
+<br>
+
+- **Any lecture → natural Hindi dub in minutes**: one command, six automated stages, technical vocabulary preserved.
+- **Measured, not estimated**: a 7-min lecture in ~3 minutes for under ₹10; ≈ ₹80–110 per lecture-hour; a 40-lecture course for the price of a textbook.
+- **20–100× cheaper** than commercial dubbing platforms, with editorial control none of them offer.
+- Open source (MIT): **github.com/nipunbatra/vidvaani**
+- Live demos: **nipunbatra.github.io/vidvaani**
+
+<br>
+
+> Next: faculty-in-the-loop review, more Indian languages, and a student comprehension study.

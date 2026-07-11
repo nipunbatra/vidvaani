@@ -36,21 +36,34 @@ def _translate_batch(
     from google.genai import types
 
     segments_json = json.dumps([
-        {"id": start_id + i, "start": s.start, "end": s.end, "text": s.text, "duration": s.end - s.start}
+        {
+            "id": start_id + i,
+            "start": s.start,
+            "end": s.end,
+            "text": s.text,
+            "duration": s.end - s.start,
+            # Word budget for ~110 wpm spoken Hindi delivery: length
+            # control at translation time beats stretching audio later.
+            "max_words": max(3, int((s.end - s.start) * 1.8)),
+        }
         for i, s in enumerate(segments)
     ], indent=2)
 
     prompt = f"""Translate the following {source_lang} transcript segments to {target_lang} (Hindi script).
 
 CRITICAL REQUIREMENTS:
-1. The Hindi translation MUST be speakable in approximately the same duration as the original
+1. Each translation MUST fit its segment's "max_words" budget - spoken Hindi
+   runs at roughly 110 words per minute, so longer text will not fit the
+   available time
 2. Use natural spoken Hindi, not formal/literary Hindi
-3. Keep translations concise - Hindi speech is often slightly faster than English
-4. Preserve the meaning but prioritize matching duration
+3. Keep technical terms, course codes, and established English vocabulary in
+   English or transliterated Devanagari exactly as students speak them
+   (e.g. "deep learning" -> "डीप लर्निंग", never a Sanskritized translation)
+4. Preserve the meaning; if the budget is tight, drop filler words, never content
 5. Use common Hindi words, avoid overly Sanskritized terms
 6. Numbers should be in Hindi words (एक, दो, तीन)
 
-Input segments (with duration in seconds):
+Input segments (with duration in seconds and max_words budget):
 {segments_json}
 
 Return a JSON array with the same structure, adding a "translated" field for each segment."""
@@ -78,7 +91,7 @@ def translate_segments(
     segments: list[dict],
     source_lang: str = "English",
     target_lang: str = "Hindi",
-    model: str = "gemini-2.0-flash",
+    model: str = "gemini-2.5-flash",
     batch_size: int = 20
 ) -> list[TranslatedSegment]:
     """Translate transcript segments to target language.
@@ -119,7 +132,7 @@ def translate_segments(
     ]
 
 
-def translate_text(text: str, target_lang: str = "Hindi", model: str = "gemini-2.0-flash") -> str:
+def translate_text(text: str, target_lang: str = "Hindi", model: str = "gemini-2.5-flash") -> str:
     """Simple text translation for single strings."""
     client = get_client()
 

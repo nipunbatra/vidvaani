@@ -1,49 +1,62 @@
-# yt-hindi
+# VidVaani
 
-AI-powered YouTube to Hindi dubbing pipeline. Automatically transcribes, translates, and dubs YouTube videos to Hindi with natural-sounding voices.
+AI-powered pipeline that dubs YouTube videos into Hindi. It downloads a video, transcribes it locally, translates the transcript, synthesizes natural Hindi speech, and reassembles the video — preserving intro music, pauses, and background audio.
+
+**Demo page:** https://nipunbatra.github.io/vidvaani/
 
 ## Features
 
-- **Auto Intro Detection**: Automatically detects intro music and preserves it
-- **Multiple TTS Backends**: Sarvam AI (native Indian voices), Gemini TTS, Edge TTS (free)
-- **Non-Speech Preservation**: Keeps original audio during pauses for natural sound
-- **SRT Subtitles**: Generates Hindi subtitle files, can burn into video
-- **Parallel Processing**: TTS runs in parallel, results are cached
-- **Cost Tracking**: Real-time API cost display
+- **Auto intro detection** — detects intro music and preserves it in the dub
+- **Multiple TTS backends** — Sarvam AI (native Indian voices), Gemini TTS, Edge TTS (free)
+- **Non-speech preservation** — keeps original audio during pauses for natural sound
+- **SRT subtitles** — generates Hindi subtitle files, optionally burned into the video
+- **Parallel TTS with caching** — resume failed runs; re-dub with a new voice without re-translating
+- **Cost tracking** — real-time API cost display per run
+
+## Pipeline
+
+```
+YouTube URL
+    |
+ 1. Download video ............ yt-dlp
+ 2. Detect intro music ........ ffmpeg silencedetect
+ 3. Transcribe (local) ........ MLX Whisper (distil-large-v3)
+ 4. Translate to Hindi ........ Gemini Flash
+ 5. Synthesize Hindi speech ... Sarvam AI / Gemini TTS / Edge TTS
+ 6. Reassemble video .......... ffmpeg (duration matching, non-speech preservation)
+    |
+Hindi dubbed video + SRT subtitles
+```
 
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/nipunbatra/yt-hindi.git
-cd yt-hindi
+git clone https://github.com/nipunbatra/vidvaani.git
+cd vidvaani
 
 # Install with uv
 uv sync
-
-# Or with pip
-pip install -e .
 ```
 
 ## Requirements
 
-- Python 3.11+
-- ffmpeg
-- API keys (set as environment variables):
-  - `GOOGLE_API_KEY` or `GEMINI_API_KEY` - for translation and Gemini TTS
-  - `SARVAM_API_KEY` - for Sarvam AI TTS (optional)
+- Python 3.11+, ffmpeg
+- Apple Silicon Mac for local MLX Whisper transcription
+- API keys (environment variables):
+  - `GOOGLE_API_KEY` or `GEMINI_API_KEY` — translation and Gemini TTS
+  - `SARVAM_API_KEY` — Sarvam AI TTS (optional)
 
 ## Quick Start
 
 ```bash
 # Dub a YouTube video (demo mode - first 5 segments)
-yt-hindi dub "https://www.youtube.com/watch?v=VIDEO_ID"
+vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID"
 
-# Full video with Sarvam voice
-yt-hindi dub "https://www.youtube.com/watch?v=VIDEO_ID" --full -b sarvam -v abhilash
+# Full video with a Sarvam voice
+vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID" --full -b sarvam -v abhilash
 
 # With video title as folder name
-yt-hindi dub "https://www.youtube.com/watch?v=VIDEO_ID" --full --title-folder
+vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID" --full --title-folder
 ```
 
 ## Usage
@@ -51,10 +64,9 @@ yt-hindi dub "https://www.youtube.com/watch?v=VIDEO_ID" --full --title-folder
 ### Dub Command
 
 ```bash
-yt-hindi dub URL [OPTIONS]
+vidvaani dub URL [OPTIONS]
 ```
 
-**Options:**
 | Option | Default | Description |
 |--------|---------|-------------|
 | `-o, --output` | `./output` | Output directory |
@@ -71,65 +83,25 @@ yt-hindi dub URL [OPTIONS]
 
 ```bash
 # Burn Hindi subtitles into video (black bar below)
-yt-hindi burn-subs video.mp4 subtitles.srt --position bottom_bar
+vidvaani burn-subs video.mp4 subtitles.srt --position bottom_bar
 
 # Overlay on video
-yt-hindi burn-subs video.mp4 subtitles.srt --position overlay
+vidvaani burn-subs video.mp4 subtitles.srt --position overlay
 ```
 
 ### Generate Voice Samples
 
 ```bash
-yt-hindi samples -o ./samples
+vidvaani samples -o ./samples
 ```
 
 ## TTS Voices
 
-### Sarvam AI (Native Indian)
-| Voice | Gender |
-|-------|--------|
-| abhilash | Male |
-| karun | Male |
-| hitesh | Male |
-| vidya | Female |
-| anushka | Female |
-| manisha | Female |
-| arya | Female |
-
-### Gemini TTS
-| Voice | Gender |
-|-------|--------|
-| Charon | Male |
-| Fenrir | Male |
-| Aoede | Female |
-| Kore | Female |
-| Puck | Male |
-
-### Edge TTS (Free)
-| Voice | Gender |
-|-------|--------|
-| male | Madhur |
-| female | Swara |
-
-## Pipeline
-
-```
-YouTube URL
-    ↓
-1. Download video (yt-dlp)
-    ↓
-2. Auto-detect intro music (ffmpeg silencedetect)
-    ↓
-3. Transcribe audio (MLX Whisper)
-    ↓
-4. Translate to Hindi (Gemini 2.0 Flash)
-    ↓
-5. Generate Hindi TTS (Sarvam/Gemini/Edge)
-    ↓
-6. Assemble final video (ffmpeg)
-    ↓
-Hindi dubbed video + SRT subtitles
-```
+| Backend | Male | Female | Notes |
+|---------|------|--------|-------|
+| Sarvam AI (`sarvam`) | abhilash, karun, hitesh | vidya, anushka, manisha, arya | Native Indian prosody |
+| Gemini TTS (`gemini`) | Charon, Fenrir, Puck | Kore, Aoede | High quality |
+| Edge TTS (`edge`) | male (Madhur) | female (Swara) | Free |
 
 ## Output Files
 
@@ -144,32 +116,40 @@ output/
     └── tts_segments_voice/       # Cached TTS audio
 ```
 
-## Cost Estimates
+## Cost and Time
 
-| Video Length | Translation | Sarvam TTS | Gemini TTS | Total |
-|--------------|-------------|------------|------------|-------|
-| 5 min | ~$0.001 | ~$0.05 | ~$0.02 | ~$0.05 |
-| 20 min | ~$0.002 | ~$0.20 | ~$0.08 | ~$0.20 |
+The pipeline prints an exact cost and timing breakdown after every run, computed
+from API-reported token counts at official prices. Measured on a 7-minute NPTEL
+lecture (July 2026, Apple Silicon):
 
-## Demo
+| Backend | Cost (7 min) | Extrapolated, 1 hour | End-to-end time |
+|---------|-------------|----------------------|-----------------|
+| Sarvam bulbul:v2 | Rs 7-10 | ~Rs 80 | 2.5-4 min |
+| Gemini 2.5 Flash TTS | Rs 11 | ~Rs 95 | similar |
+| Edge TTS (free) | Rs 1.4 (translation only) | ~Rs 12 | similar |
 
-Open `index.html` in a browser to see example dubbed videos.
+Timing is dominated by the translation API; transcription is local. Re-runs
+with a different voice reuse cached transcripts and translations.
+
+## Design notes
+
+How the pipeline fits Hindi speech into the original timing — and how that
+design compares to the automatic-dubbing literature — is documented in
+[docs/timing-alignment.md](docs/timing-alignment.md).
 
 ## Examples
 
 ```bash
 # NPTEL Deep Learning lecture with Sarvam voice
-yt-hindi dub "https://www.youtube.com/watch?v=4TC5s_xNKSs" \
+vidvaani dub "https://www.youtube.com/watch?v=4TC5s_xNKSs" \
     --full --title-folder -b sarvam -v abhilash
 
 # Generate multiple voices (translation is cached)
-yt-hindi dub "https://www.youtube.com/watch?v=4TC5s_xNKSs" \
+vidvaani dub "https://www.youtube.com/watch?v=4TC5s_xNKSs" \
     --full --title-folder -b sarvam -v karun
-yt-hindi dub "https://www.youtube.com/watch?v=4TC5s_xNKSs" \
-    --full --title-folder -b sarvam -v hitesh
 
 # Burn subtitles into video
-yt-hindi burn-subs output/Video_Title/video_hindi_abhilash.mp4 \
+vidvaani burn-subs output/Video_Title/video_hindi_abhilash.mp4 \
     output/Video_Title/video_hindi.srt --position bottom_bar
 ```
 
@@ -179,4 +159,4 @@ MIT
 
 ## Author
 
-[Nipun Batra](https://nipunbatra.github.io) - IIT Gandhinagar
+[Nipun Batra](https://nipunbatra.github.io) — IIT Gandhinagar

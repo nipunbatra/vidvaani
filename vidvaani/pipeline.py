@@ -84,7 +84,7 @@ def run_pipeline(
     original_volume: float = 0.1,
     save_intermediate: bool = True,
     whisper_model: str = "mlx-community/distil-whisper-large-v3",
-    translation_model: str = "gemini-2.0-flash",
+    translation_model: str = "gemini-2.5-flash",
     max_segment_duration: float = 15.0,
     tts_workers: int = 5,
     max_segments: int = 5,
@@ -316,12 +316,18 @@ def run_pipeline(
             if output_path.exists():
                 cached_count += 1
             else:
+                # Allow overlong audio to spill into the trailing pause
+                # (up to the next segment's start, capped at 2s of slack)
+                # instead of truncating content.
+                next_start = (translated[i + 1].start
+                              if i + 1 < len(translated) else seg.end + 2.0)
                 jobs.append(TTSJob(
                     index=len(jobs),  # Use sequential index for the jobs list
                     text=seg.translated,
                     start=seg.start,
                     end=seg.end,
-                    output_path=output_path
+                    output_path=output_path,
+                    max_end=min(next_start, seg.end + 2.0)
                 ))
 
         if skipped_short > 0:
@@ -336,20 +342,28 @@ def run_pipeline(
 
         # Run TTS in parallel for remaining jobs
         if jobs:
+            # Gemini preview TTS rate-limits aggressively; keep it to 2 workers.
+            worker_cap = 2 if tts_backend == "gemini" else 3
             synthesize_batch_parallel(
                 jobs,
                 voice=voice,
                 backend=tts_backend,
-                max_workers=min(tts_workers, 3),  # Reduce workers to avoid rate limits
+                max_workers=min(tts_workers, worker_cap),
                 progress_callback=tts_progress
             )
 
-        # Collect all audio segments (including cached ones)
-        audio_segments = [
-            (tts_dir / f"segment_{i:04d}.mp3", seg.start, seg.end)
-            for i, seg in enumerate(translated)
-            if (tts_dir / f"segment_{i:04d}.mp3").exists()
-        ]
+        # Collect all audio segments (including cached ones). Use the
+        # actual clip duration for the end time so the original audio is
+        # muted for exactly as long as the Hindi clip plays (clips may
+        # spill slightly into trailing pauses).
+        from .tts import get_audio_duration
+        audio_segments = []
+        for i, seg in enumerate(translated):
+            seg_path = tts_dir / f"segment_{i:04d}.mp3"
+            if seg_path.exists():
+                clip_dur = get_audio_duration(seg_path)
+                end = max(seg.end, seg.start + clip_dur) if clip_dur > 0 else seg.end
+                audio_segments.append((seg_path, seg.start, end))
 
         progress.update(tts_task, completed=len(translated),
                        description=f"[green]Generated: {len(audio_segments)} audio segments")

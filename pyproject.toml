@@ -1,7 +1,7 @@
 [project]
-name = "yt-hindi"
+name = "vidvaani"
 version = "0.1.0"
-description = "YouTube to Hindi dubbing pipeline with MCP server"
+description = "VidVaani: AI pipeline for dubbing YouTube videos into Hindi"
 requires-python = ">=3.11"
 dependencies = [
     "fastmcp>=2.0.0",
@@ -16,9 +16,9 @@ dependencies = [
 ]
 
 [project.scripts]
-yt-hindi = "yt_hindi.cli:main"
-yt-hindi-server = "yt_hindi.server:main"
-yt-hindi-ui = "yt_hindi.ui:main"
+vidvaani = "vidvaani.cli:main"
+vidvaani-server = "vidvaani.server:main"
+vidvaani-ui = "vidvaani.ui:main"
 
 [build-system]
 requires = ["hatchling"]

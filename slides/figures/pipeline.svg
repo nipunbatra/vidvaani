@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 250" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#57606a"/>
+    </marker>
+  </defs>
+
+  <!-- input label -->
+  <text x="20" y="30" font-size="15" fill="#57606a">Input: YouTube URL</text>
+
+  <!-- Stage boxes -->
+  <!-- 1 Download -->
+  <g>
+    <rect x="20" y="58" width="142" height="84" rx="6" fill="#ffffff" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="91" y="92" font-size="16.5" font-weight="700" fill="#1f2328" text-anchor="middle">Download</text>
+    <text x="91" y="116" font-size="13.5" fill="#57606a" text-anchor="middle" font-family="Menlo, monospace">yt-dlp</text>
+    <text x="91" y="162" font-size="12.5" fill="#57606a" text-anchor="middle">local · free</text>
+  </g>
+  <line x1="162" y1="100" x2="192" y2="100" stroke="#57606a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 2 Intro detection -->
+  <g>
+    <rect x="194" y="58" width="142" height="84" rx="6" fill="#ffffff" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="265" y="92" font-size="16.5" font-weight="700" fill="#1f2328" text-anchor="middle">Detect intro</text>
+    <text x="265" y="116" font-size="13.5" fill="#57606a" text-anchor="middle" font-family="Menlo, monospace">ffmpeg</text>
+    <text x="265" y="162" font-size="12.5" fill="#57606a" text-anchor="middle">local · free</text>
+  </g>
+  <line x1="336" y1="100" x2="366" y2="100" stroke="#57606a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 3 Transcribe -->
+  <g>
+    <rect x="368" y="58" width="142" height="84" rx="6" fill="#ffffff" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="439" y="92" font-size="16.5" font-weight="700" fill="#1f2328" text-anchor="middle">Transcribe</text>
+    <text x="439" y="116" font-size="13.5" fill="#57606a" text-anchor="middle" font-family="Menlo, monospace">MLX Whisper</text>
+    <text x="439" y="162" font-size="12.5" fill="#57606a" text-anchor="middle">on-device · free</text>
+  </g>
+  <line x1="510" y1="100" x2="540" y2="100" stroke="#57606a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 4 Translate -->
+  <g>
+    <rect x="542" y="58" width="142" height="84" rx="6" fill="#f3f6fa" stroke="#1a3a5c" stroke-width="1.8"/>
+    <text x="613" y="92" font-size="16.5" font-weight="700" fill="#1a3a5c" text-anchor="middle">Translate</text>
+    <text x="613" y="116" font-size="13.5" fill="#57606a" text-anchor="middle" font-family="Menlo, monospace">Gemini Flash</text>
+    <text x="613" y="162" font-size="12.5" fill="#1a3a5c" text-anchor="middle">cloud API · paid</text>
+  </g>
+  <line x1="684" y1="100" x2="714" y2="100" stroke="#57606a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 5 TTS -->
+  <g>
+    <rect x="716" y="58" width="142" height="84" rx="6" fill="#f3f6fa" stroke="#1a3a5c" stroke-width="1.8"/>
+    <text x="787" y="92" font-size="16.5" font-weight="700" fill="#1a3a5c" text-anchor="middle">Hindi speech</text>
+    <text x="787" y="116" font-size="13.5" fill="#57606a" text-anchor="middle" font-family="Menlo, monospace">Sarvam / Gemini</text>
+    <text x="787" y="162" font-size="12.5" fill="#1a3a5c" text-anchor="middle">cloud API · paid</text>
+  </g>
+  <line x1="858" y1="100" x2="888" y2="100" stroke="#57606a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 6 Assemble -->
+  <g>
+    <rect x="890" y="58" width="142" height="84" rx="6" fill="#ffffff" stroke="#8b949e" stroke-width="1.5"/>
+    <text x="961" y="92" font-size="16.5" font-weight="700" fill="#1f2328" text-anchor="middle">Assemble</text>
+    <text x="961" y="116" font-size="13.5" fill="#57606a" text-anchor="middle" font-family="Menlo, monospace">ffmpeg</text>
+    <text x="961" y="162" font-size="12.5" fill="#57606a" text-anchor="middle">local · free</text>
+  </g>
+  <line x1="1032" y1="100" x2="1062" y2="100" stroke="#57606a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- output -->
+  <text x="1070" y="90" font-size="15" font-weight="700" fill="#1f2328">Hindi video</text>
+  <text x="1070" y="112" font-size="15" fill="#57606a">+ .srt subtitles</text>
+
+  <!-- annotations under paid boxes -->
+  <path d="M 542 186 L 542 196 L 858 196 L 858 186" fill="none" stroke="#8b949e" stroke-width="1"/>
+  <text x="700" y="220" font-size="13.5" fill="#57606a" text-anchor="middle">the only paid steps — together under ₹10 for a 7-minute lecture (measured)</text>
+</svg>

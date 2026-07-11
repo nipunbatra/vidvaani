@@ -14,7 +14,7 @@ from .translator import translate_segments
 
 
 mcp = FastMCP(
-    "yt-hindi",
+    "vidvaani",
     description="YouTube to Hindi dubbing pipeline"
 )
 
@@ -135,7 +135,7 @@ def transcribe_youtube(
 @mcp.tool()
 def translate_to_hindi(
     text: str,
-    model: str = "gemini-2.0-flash"
+    model: str = "gemini-2.5-flash"
 ) -> dict:
     """Translate text to Hindi.
 

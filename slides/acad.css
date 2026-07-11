@@ -1,0 +1,212 @@
+/* @theme acad */
+/* Clean academic theme: white ground, serif display, booktabs tables. */
+
+@import 'default';
+
+:root {
+  --ink: #1f2328;
+  --ink-2: #57606a;
+  --ink-3: #8b949e;
+  --navy: #1a3a5c;
+  --navy-2: #2c5a8c;
+  --rule: #d0d7de;
+  --accent-bg: #f3f6fa;
+}
+
+section {
+  width: 1280px;
+  height: 720px;
+  padding: 58px 78px 70px;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: 'Helvetica Neue', Helvetica, 'Inter', -apple-system, Arial, sans-serif;
+  font-size: 21.5px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  place-content: flex-start !important;
+  justify-content: flex-start !important;
+  align-items: stretch;
+}
+
+section h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  font-size: 1.58em;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--rule);
+}
+
+section h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.12em;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 20px 0 6px;
+}
+
+section h3 {
+  font-size: 0.94em;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 16px 0 4px;
+}
+
+section a { color: var(--navy-2); text-decoration: none; }
+
+section strong { color: var(--ink); font-weight: 700; }
+section em { color: inherit; }
+
+section code {
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.82em;
+  background: var(--accent-bg);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--navy);
+}
+
+section pre {
+  background: var(--accent-bg);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 16px 20px;
+  font-size: 0.78em;
+  line-height: 1.55;
+  margin: 12px 0;
+}
+section pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--ink);
+}
+
+/* Booktabs-style tables: heavy top/bottom rule, light header rule, no verticals. */
+section table {
+  margin: 14px auto 6px;
+  border-collapse: collapse;
+  font-size: 0.86em;
+  line-height: 1.4;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+}
+section table th {
+  border: none;
+  border-bottom: 1px solid var(--ink);
+  background: none;
+  color: var(--ink);
+  font-weight: 700;
+  text-align: left;
+  padding: 7px 16px;
+}
+section table td {
+  border: none;
+  background: none;
+  padding: 6px 16px;
+  color: var(--ink);
+}
+section table tr:nth-child(even) td,
+section tbody tr:nth-child(2n),
+section tbody tr:nth-child(2n) td { background: transparent !important; }
+
+section ul, section ol { margin: 8px 0; padding-left: 1.15em; }
+section li { margin: 4px 0; }
+section li li { font-size: 0.94em; }
+
+section img { background: transparent; display: block; margin: 10px auto; }
+
+section blockquote {
+  border-left: 3px solid var(--navy);
+  background: var(--accent-bg);
+  color: var(--ink);
+  padding: 10px 18px;
+  margin: 14px 0;
+  font-size: 0.94em;
+}
+section blockquote strong { color: var(--navy); }
+
+/* Small footnote/source line pinned to the bottom of the slide. */
+section .foot {
+  position: absolute;
+  bottom: 26px;
+  left: 78px;
+  right: 78px;
+  font-size: 0.62em;
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+/* Two-column layout. */
+section .cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 34px;
+  align-items: start;
+}
+
+/* Figure caption. */
+section .cap {
+  text-align: center;
+  font-size: 0.72em;
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+
+section::after {
+  font-size: 0.62em;
+  color: var(--ink-3);
+  right: 40px;
+  bottom: 24px;
+}
+
+section header {
+  font-size: 0.6em;
+  color: var(--ink-3);
+  left: 78px;
+  top: 22px;
+  letter-spacing: 0.04em;
+}
+
+/* Title slide. */
+section.title {
+  justify-content: center !important;
+  text-align: left;
+  padding: 90px 100px;
+}
+section.title h1 {
+  font-size: 2.5em;
+  border: none;
+  margin-bottom: 4px;
+  padding-bottom: 0;
+}
+section.title p { margin: 6px 0; }
+section.title .subtitle {
+  font-family: Georgia, serif;
+  font-size: 1.25em;
+  color: var(--ink-2);
+  margin-bottom: 42px;
+}
+section.title .author { font-size: 1.0em; color: var(--ink); font-weight: 600; }
+section.title .affil  { font-size: 0.88em; color: var(--ink-2); }
+section.title .date   { font-size: 0.78em; color: var(--ink-3); margin-top: 30px; }
+section.title::after { content: none; }
+
+/* Section divider slide. */
+section.divider {
+  justify-content: center !important;
+  background: var(--navy);
+  color: #ffffff;
+}
+section.divider h1 {
+  color: #ffffff;
+  border: none;
+  font-size: 2em;
+}
+section.divider p { color: #c9d6e4; }

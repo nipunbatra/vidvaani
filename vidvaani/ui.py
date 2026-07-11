@@ -29,7 +29,7 @@ def process_video(
         return None, "", "", "", "Please enter a YouTube URL"
 
     # Create temp output directory
-    output_dir = Path(tempfile.mkdtemp(prefix="yt_hindi_"))
+    output_dir = Path(tempfile.mkdtemp(prefix="vidvaani_"))
 
     progress(0.1, desc="Starting pipeline...")
 

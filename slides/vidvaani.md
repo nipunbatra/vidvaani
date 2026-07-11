@@ -190,7 +190,7 @@ Every run reports its own timing and cost — the numbers on the previous slides
 
 **nipunbatra.github.io/vidvaani** — plays in any browser:
 
-1. **58-second calculus clip, five ways** — original, Sarvam and Gemini voices, plus Sarvam's own Dashboard output for direct comparison.
+1. **58-second calculus clip, eight ways** — original, Sarvam and Gemini voices (same translation, so the comparison is purely the voice), plus Sarvam's own Dashboard output.
 2. **Full 7-minute NPTEL lecture** — original beside Hindi dub; intro music preserved; five voices; burned-in subtitles.
 
 What to listen for:

@@ -56,29 +56,44 @@ title: "VidVaani: Automated Hindi Dubbing of Technical Lectures"
 - Transcription runs **on-device** (MLX Whisper on Apple Silicon) — audio never leaves the machine until translation.
 - Every intermediate artifact is cached: re-dubbing with a new voice skips download, transcription, and translation.
 
----
-
-# Stage design choices
-
-| Stage | Tool | Design choice |
-|---|---|---|
-| Download | `yt-dlp` | Works on any YouTube URL or local file — no allowlist |
-| Intro detection | `ffmpeg silencedetect` | Music/intro is **preserved**, dubbing starts at first speech |
-| Transcription | MLX Whisper (`distil-large-v3`) | Local, free, time-stamped segments (grouped to ≤ 15 s) |
-| Translation | Gemini 2.5 Flash | Segment-batched, JSON-structured, duration-aware prompt |
-| Speech synthesis | Sarvam `bulbul:v2` / Gemini TTS / Edge TTS | Native Indian voices; parallel synthesis with per-segment caching |
-| Assembly | `ffmpeg` | Duration matching + original audio preserved during pauses |
+The next five slides walk **one real lecture** — NPTEL CS7015 Lecture 1.1 (Prof. Mitesh Khapra, IIT Madras, 7 min) — through every stage.
 
 ---
 
-# Translation that respects the clock — and the classroom
+# Steps 1–2 — Download, and find where speech starts
+
+`yt-dlp` fetches any YouTube URL or local file — no allowlist, no channel ownership needed. Then `ffmpeg silencedetect` locates the boundary between intro music and speech:
+
+![w:1080](figures/intro_detection.png)
+
+The music is **not dubbed over** — it is kept exactly as published, and dubbing begins on the first spoken word.
+
+---
+
+# Step 3 — Transcribe on-device
+
+MLX Whisper (`distil-large-v3`) runs locally on Apple Silicon — the audio never leaves the machine. Output: time-stamped English segments, grouped to ≤ 15 s:
+
+| Time | Whisper output (verbatim) |
+|---|---|
+| 18.6 – 29.9 s | "In today's lecture is going to be a bit non-technical. We are not going to cover any technical concepts…" |
+| 29.9 – 41.1 s | "So, we hear the terms artificial neural networks, artificial neurons quite often these days…" |
+| 41.1 – 56.0 s | "And this history contains several spans across several fields, not just computer science…" |
+
+Transcribing the full 7-minute lecture took **17–20 s** (measured) — and it is free.
+
+<div class="foot">Rows taken verbatim from the pipeline's transcript file (4TC5s_xNKSs_transcript_en.json), July 2026. Note Whisper keeps the speaker's actual phrasing, including slips.</div>
+
+---
+
+# Step 4 — Translate for the clock, and the classroom
 
 Constraints in the translation prompt: *speakable in the same duration; conversational (not literary) Hindi; technical terms stay in English.*
 
 | | Original (English) | VidVaani (Hindi) |
 |---|---|---|
-| 0:00 | "Hello everyone, welcome to lecture 1 of **CS7015** which is the course on **deep learning**." | "सभी को नमस्कार, **CS7015** के पहले लेक्चर में आपका स्वागत है, जो **डीप लर्निंग** का कोर्स है।" |
-| 0:30 | "…we hear the terms **artificial neural networks**, artificial neurons quite often these days." | "…आजकल हम '**आर्टिफिशियल न्यूरल नेटवर्क**', 'आर्टिफिशियल न्यूरॉन्स' जैसे शब्द अक्सर सुनते हैं।" |
+| 13.2 s | "Hello everyone, welcome to lecture 1 of **CS7015** which is the course on **deep learning**." | "सभी को नमस्कार, **CS7015** के लेक्चर एक में आपका स्वागत है, जो **डीप लर्निंग** का कोर्स है।" |
+| 29.9 s | "…we hear the terms **artificial neural networks**, artificial neurons quite often these days." | "…आजकल हम आर्टिफिशियल न्यूरल नेटवर्क्स, आर्टिफिशियल न्यूरॉन्स शब्द अक्सर सुनते हैं।" |
 
 Students say *gradient* and *neural network* — a dub that renders them as प्रवणता and तंत्रिका जाल (as fully-literal systems do) sounds foreign to the very audience it serves.
 
@@ -86,7 +101,7 @@ Students say *gradient* and *neural network* — a dub that renders them as प�
 
 ---
 
-# Fitting Hindi speech into English timing
+# Step 5 — Synthesize, and fit the clock
 
 Hindi runs ~15–35% longer than English. Per segment, following the automatic-dubbing literature:
 
@@ -96,7 +111,19 @@ Hindi runs ~15–35% longer than English. Per segment, following the automatic-d
 4. Still too long? The clip **spills into the trailing pause** rather than being cut — professional dubs sacrifice timing, never content.
 5. During pauses, the **original soundtrack plays** — atmosphere and intro music survive the dub.
 
+In the latest run of the example lecture, **all 33 segments fit their slots** — the word budget does most of the work before any audio adjustment is needed.
+
 <div class="foot">Design informed by the dubbing literature: Federico et al. 2020 (arXiv:2001.06785), Virkar et al. 2022 (arXiv:2204.02530), "Dubbing in Practice" TACL 2023 (arXiv:2212.12137). Details: docs/timing-alignment.md in the repo.</div>
+
+---
+
+# Step 6 — Reassemble: the result, seen in the signal
+
+![w:1080](figures/waveform_compare.png)
+
+The intro is bit-identical to the source; every Hindi utterance starts on its original segment boundary; between utterances the original soundtrack plays. Plus a Hindi `.srt`, and optionally subtitles burned into the frame.
+
+<div class="foot">First 60 s of NPTEL CS7015 Lec 1.1 and its dub, from the July 2026 run shown on the demo page.</div>
 
 ---
 

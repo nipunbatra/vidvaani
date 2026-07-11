@@ -33,8 +33,9 @@ EDGE_VOICES = {
     "female": "hi-IN-SwaraNeural",
 }
 
-# Gemini voice options (Aoede, Charon, Fenrir, Kore, Puck)
-GEMINI_VOICES = ["Aoede", "Charon", "Fenrir", "Kore", "Puck"]
+# Gemini voice options (male: Charon, Fenrir, Iapetus, Orus, Puck,
+# Sadaltager; female: Aoede, Kore)
+GEMINI_VOICES = ["Aoede", "Charon", "Fenrir", "Iapetus", "Kore", "Orus", "Puck", "Sadaltager"]
 
 # Sarvam AI voices (Bulbul v2) - native Hindi voices
 SARVAM_VOICES = {

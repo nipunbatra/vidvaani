@@ -100,7 +100,7 @@ vidvaani samples -o ./samples
 | Backend | Male | Female | Notes |
 |---------|------|--------|-------|
 | Sarvam AI (`sarvam`) | abhilash, karun, hitesh | vidya, anushka, manisha, arya | Native Indian prosody |
-| Gemini TTS (`gemini`) | Charon, Fenrir, Puck | Kore, Aoede | High quality |
+| Gemini TTS (`gemini`) | Charon, Orus, Iapetus, Sadaltager, Fenrir, Puck | Kore, Aoede | High quality |
 | Edge TTS (`edge`) | male (Madhur) | female (Swara) | Free |
 
 ## Output Files

@@ -42,9 +42,10 @@ def _translate_batch(
             "end": s.end,
             "text": s.text,
             "duration": s.end - s.start,
-            # Word budget for ~110 wpm spoken Hindi delivery: length
-            # control at translation time beats stretching audio later.
-            "max_words": max(3, int((s.end - s.start) * 1.8)),
+            # Word budget calibrated to measured Sarvam TTS delivery
+            # (~2.8 words/s); 2.4 w/s targets ~85% slot fill so speech
+            # neither overruns nor leaves long dead air.
+            "max_words": max(4, int((s.end - s.start) * 2.4)),
         }
         for i, s in enumerate(segments)
     ], indent=2)
@@ -52,9 +53,9 @@ def _translate_batch(
     prompt = f"""Translate the following {source_lang} transcript segments to {target_lang} (Hindi script).
 
 CRITICAL REQUIREMENTS:
-1. Each translation MUST fit its segment's "max_words" budget - spoken Hindi
-   runs at roughly 110 words per minute, so longer text will not fit the
-   available time
+1. Each translation MUST NOT exceed its segment's "max_words" budget, and
+   should come CLOSE to it - a translation far below the budget leaves long
+   awkward silences in the dubbed audio
 2. Use natural spoken Hindi, not formal/literary Hindi
 3. Keep technical terms, course codes, and established English vocabulary in
    English or transliterated Devanagari exactly as students speak them

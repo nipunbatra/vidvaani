@@ -105,7 +105,7 @@ Students say *gradient* and *neural network* — a dub that renders them as प�
 
 Hindi runs ~15–35% longer than English. Per segment, following the automatic-dubbing literature:
 
-1. The translator gets a **word budget** (≈ 1.8 × seconds, ~110 wpm spoken Hindi) — fixing length at translation time beats stretching audio afterwards.
+1. The translator gets a **word budget** per slot (2.4 words/s, calibrated against the TTS voice's measured 2.8 words/s delivery) — fixing length at translation time beats stretching audio afterwards.
 2. Synthesize at natural pace, trim trailing silence, measure with `ffprobe`.
 3. If it fits (±5%) — done. Otherwise speed-adjust with an **asymmetric clamp (0.95×–1.35×)**: listeners tolerate faster speech far better than slowed speech.
 4. Still too long? The clip **spills into the trailing pause** rather than being cut — professional dubs sacrifice timing, never content.
@@ -149,7 +149,7 @@ Measured on the same 7-minute lecture (5,307 Hindi characters):
 
 - A full **40-lecture course ≈ ₹3,200–4,400** — less than one SaaS-dubbed lecture.
 - Costs measured by the pipeline itself from API-reported token counts, at official July 2026 prices.
-- Conservative: after adding word budgets to the translation, the same lecture re-ran at **₹6.7**.
+- Stable across runs: after calibrating the translation word budget, the same lecture re-ran at **₹7.9**.
 
 <div class="foot">Sarvam: ₹15/10,000 chars (docs.sarvam.ai). Gemini TTS: $0.50/1M text + $10/1M audio tokens; translation $0.30/$2.50 per 1M (ai.google.dev/gemini-api/docs/pricing). 1 USD = ₹95.4.</div>
 

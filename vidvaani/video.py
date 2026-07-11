@@ -1,5 +1,6 @@
 """Video assembly using ffmpeg."""
 
+import re
 import subprocess
 import tempfile
 import shutil
@@ -437,6 +438,18 @@ def create_hindi_video(
     return result
 
 
+def measure_integrated_loudness(audio_path: Path) -> float | None:
+    """Measure integrated loudness (LUFS) of an audio file via loudnorm."""
+    cmd = [
+        "ffmpeg", "-i", str(audio_path),
+        "-af", "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json",
+        "-f", "null", "-"
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    m = re.search(r'"input_i"\s*:\s*"(-?[\d.]+)"', result.stderr)
+    return float(m.group(1)) if m else None
+
+
 def create_mixed_audio(
     video_path: Path,
     audio_segments: list[tuple[Path, float, float]],
@@ -475,6 +488,12 @@ def create_mixed_audio(
 
         # Build ffmpeg filter to mix audio
         # Strategy: Use original audio as base, duck it during speech, overlay Hindi TTS
+
+        # Match the dub's loudness to the ORIGINAL video, not a fixed
+        # broadcast target - otherwise the dub plays noticeably louder
+        # than the source (and A/B comparisons jump in volume).
+        target_i = measure_integrated_loudness(original_audio)
+        target_i = max(-30.0, min(-12.0, target_i)) if target_i is not None else -16.0
 
         # Sort segments by start time
         sorted_segments = sorted(audio_segments, key=lambda x: x[1])
@@ -525,7 +544,7 @@ def create_mixed_audio(
         # Mix all together
         tts_refs = "".join(f"[tts{i}]" for i in range(len(sorted_segments)))
         filter_parts.append(f"[ducked]{tts_refs}amix=inputs={len(sorted_segments) + 1}:duration=first:normalize=0[mixed]")
-        filter_parts.append("[mixed]loudnorm=I=-16:TP=-1.5:LRA=11[out]")
+        filter_parts.append(f"[mixed]loudnorm=I={target_i:.1f}:TP=-1.5:LRA=11[out]")
 
         filter_complex = ";".join(filter_parts)
 

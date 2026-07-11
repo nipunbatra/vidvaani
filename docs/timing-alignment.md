@@ -65,9 +65,10 @@ genuinely need intervention beyond gentle stretching.
 | **Never truncate**: overlong clips spill into the trailing pause (up to the next segment's start, ≤ 2 s), truncation only at that hard cap | Humans prefer broken timing over deleted content (TACL 2023) |
 | **Asymmetric speed clamp**: was 0.85×–1.25×, now 0.95×–1.35× (pad instead of slowing; more speed-up headroom before the last resort) | Slow-downs hurt more than speed-ups (ICASSP 2022); fluent envelope 0.6–1.4 (Interspeech 2020) |
 | **Trim TTS trailing silence before measuring** duration | Otherwise speech gets sped up to make room for silence (open-dubbing does the same) |
-| **Numeric word budget in the translation prompt** (`max_words ≈ 1.8 × duration_s`, ~110 wpm spoken Hindi) instead of "approximately the same duration" | Duration-unit budgets shift length; vague instructions are ignored (IWSLT 2025, arXiv:2506.04855) |
+| **Numeric word budget in the translation prompt** (`max_words ≈ 2.4 × duration_s`), calibrated against the measured Sarvam delivery rate (~2.8 words/s ≈ 170 wpm — much faster than human-narration figures), with an explicit "come close to the budget" instruction | Duration-unit budgets shift length; vague instructions are ignored (IWSLT 2025, arXiv:2506.04855). A first attempt at 1.8 w/s (110 wpm assumption) yielded only 61% median slot fill — audibly sparse |
 | **Explicit code-mixing rule**: technical terms stay in English/transliteration | NPTEL production policy across 20,000+ hours; Sanskritized terminology rejected by students |
 | Original audio muted for the clip's *actual* duration, not the nominal slot | Prevents double-audio during spill-over |
+| **Final mix loudness matched to the source video** (measured via `loudnorm` print mode) instead of a fixed −16 LUFS | The fixed broadcast target made every dub ~3 LU louder than its original; A/B comparisons jumped in volume |
 
 ## Next steps (not yet implemented, ranked by value/effort)
 

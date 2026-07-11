@@ -351,7 +351,7 @@
         <section id="voices">
             <div class="wrap">
                 <div class="eyebrow">Pick a voice</div>
-                <h2>The same clip, eight ways</h2>
+                <h2>The same clip, nine ways</h2>
                 <p class="sub">
                     A 58-second calculus explainer, re-voiced by each backend — same translation
                     everywhere, so what you're comparing is purely the voice. The last card is
@@ -407,6 +407,13 @@
                         <div class="voice-card-body">
                             <span class="voice-name">Sadaltager<span class="tag tag-gemini">Gemini · male</span></span>
                             <div class="voice-desc">Warm, knowledgeable delivery.</div>
+                        </div>
+                    </div>
+                    <div class="voice-card">
+                        <video controls preload="metadata" poster="demo_videos/posters/local_gemma_qwen.jpg" src="demo_videos/mini_demo/local_gemma_qwen.mp4"></video>
+                        <div class="voice-card-body">
+                            <span class="voice-name">Fully local<span class="tag tag-original">Gemma 4 + Qwen3-TTS · ₹0</span></span>
+                            <div class="voice-desc">Experimental: translated and voiced entirely on a laptop — no cloud involved.</div>
                         </div>
                     </div>
                     <div class="voice-card">
@@ -623,6 +630,10 @@ cd vidvaani &amp;&amp; uv sync
                     <div class="faq-card">
                         <h3>What do I need to run it?</h3>
                         <p>A Mac with Apple Silicon (for local Whisper transcription), ffmpeg, and free-tier API keys. With Edge TTS the total cost is just the translation — about ₹12 per lecture-hour.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h3>Can it run fully offline?</h3>
+                        <p>Yes — experimentally. Transcription is already local; swap Gemini for <strong>Gemma 4 12B</strong> (via ollama) and Sarvam for <strong>Qwen3-TTS</strong> (via MLX) and the whole pipeline runs on a Mac at ₹0: the "Fully local" card above was made this way (translation 25 s, speech ~4× real-time). Voice cloning from a 30-second reference also works locally — used only with the speaker's consent.</p>
                     </div>
                     <div class="faq-card">
                         <h3>Only Hindi?</h3>

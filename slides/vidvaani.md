@@ -245,8 +245,24 @@ What to listen for:
 - **No human review loop yet** — NPTEL's own effort treats faculty verification as essential for pedagogy; ₹80/lecture buys the draft, not the sign-off.
 - **Timing fit is still partly post-hoc** — word budgets plus a 0.95–1.35× speed clamp handle most segments, but very dense passages can still sound hurried (see next slide).
 - Gemini TTS models are **preview** — pricing and behaviour may change; Edge TTS is an unofficial free endpoint, fine for prototyping only.
-- No lip-sync and no voice cloning of the original lecturer (the latter also needs consent workflows).
+- No lip-sync. Voice cloning of the original lecturer now works locally (next slide) but is gated on **consent** — we do not publish cloned voices without the speaker's permission.
 - Hindi first; Sarvam voices cover 11 Indian languages, so extension is natural.
+
+---
+
+# Towards a fully local pipeline
+
+Every cloud stage now has a working local, open-weights replacement — measured on the 58 s demo clip, Apple Silicon, July 2026:
+
+| Stage | Cloud (current) | Local (experimental) | Measured, local |
+|---|---|---|---|
+| Transcribe | — (already local) | MLX Whisper | 17–20 s per 7-min lecture |
+| Translate | Gemini 2.5 Flash | **Gemma 4 12B** (ollama, Apache-2.0) | 25 s for the clip |
+| Hindi speech | Sarvam API | **Qwen3-TTS 1.7B** (MLX, Apache-2.0) | ~4× real time |
+
+- The "Fully local" demo card was produced this way — **₹0 per lecture, nothing leaves the machine**; a 1-hour lecture ≈ an overnight batch.
+- **Voice cloning works locally**: a 30 s English reference clip produces the same speaker's voice speaking Hindi (verified by STT round-trip). We use it only with the speaker's consent — a lecturer could dub their own course *in their own voice*.
+- Indic-specialised alternatives (AI4Bharat IndicF5, Chatterbox-hi) may beat Qwen3-TTS on Hindi naturalness; evaluation ongoing (see `docs/local-models.md`).
 
 ---
 

@@ -248,21 +248,24 @@ def run_pipeline(
                         ]
                     }, f, ensure_ascii=False, indent=2)
 
-        # Generate SRT subtitle file (includes all segments)
-        srt_path = output_dir / f"{download_result.video_path.stem}_hindi.srt"
-        generate_srt(translated, srt_path, language="hi")
-        console.print(f"[yellow]Generated subtitles: {srt_path.name}[/yellow]")
-
-        # Validate intro_offset against actual transcript: if speech starts before
-        # the detected intro boundary, silence detection found a speech pause, not
-        # an actual intro.  Clamp intro_offset to where speech truly begins.
+        # Validate intro_offset against the transcript. Whisper's first
+        # segment often starts at 0.0 even when leading music is present
+        # (the music gets lumped into the first speech segment), so a
+        # detected intro that falls INSIDE the first segment is genuine
+        # leading music - trust it. Only when the detected boundary falls
+        # BEYOND the first segment did silencedetect find a mid-speech
+        # pause rather than an intro - clamp in that case.
         if intro_offset > 0 and translated:
-            first_speech_start = translated[0].start
-            if first_speech_start < intro_offset:
-                intro_offset = first_speech_start
+            first = translated[0]
+            if intro_offset > first.end:
+                intro_offset = first.start
                 console.print(
                     f"[yellow]Intro offset clamped to {intro_offset:.1f}s "
-                    f"(speech starts at {first_speech_start:.1f}s)[/yellow]"
+                    f"(detected boundary was past the first speech segment)[/yellow]"
+                )
+            elif intro_offset > first.start:
+                console.print(
+                    f"[yellow]Intro music detected: dubbing starts at {intro_offset:.1f}s[/yellow]"
                 )
 
         # Adjust segments for intro offset (keeps original audio during intro)
@@ -290,6 +293,12 @@ def run_pipeline(
             if skipped > 0 or adjusted > 0:
                 console.print(f"[yellow]Intro ({intro_offset}s): skipped {skipped}, adjusted {adjusted} segments[/yellow]")
             translated = adjusted_translated
+
+        # Generate SRT after intro adjustment so subtitles match the dub
+        # timing (no subtitle text during preserved intro music).
+        srt_path = output_dir / f"{download_result.video_path.stem}_hindi.srt"
+        generate_srt(translated, srt_path, language="hi")
+        console.print(f"[yellow]Generated subtitles: {srt_path.name}[/yellow]")
 
         # Step 4: Generate Hindi TTS in parallel
         step_start = time.time()

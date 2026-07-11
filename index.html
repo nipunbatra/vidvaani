@@ -306,6 +306,7 @@
             <a href="#how">How it works</a>
             <a href="#cost">Cost</a>
             <a href="#faq">FAQ</a>
+            <a href="slides/vidvaani.html" target="_blank">Slides</a>
             <a href="https://github.com/nipunbatra/vidvaani" target="_blank" class="nav-cta">GitHub</a>
         </div>
     </nav>
@@ -486,7 +487,7 @@
                     </div>
                     <div class="step"><div class="step-num">6</div>
                         <h3>Rebuild the video</h3>
-                        <p>Each clip is gently speed-matched to its slot (0.85–1.25×), the original soundtrack plays during pauses, and ffmpeg stitches it all back — plus a Hindi <code>.srt</code>.</p>
+                        <p>Each clip is gently speed-matched to its slot (0.95–1.35×, never truncated — long sentences borrow from the following pause), the original soundtrack plays during pauses, and ffmpeg stitches it all back — plus a Hindi <code>.srt</code>.</p>
                     </div>
                 </div>
             </div>
@@ -570,10 +571,10 @@ git clone https://github.com/nipunbatra/vidvaani.git
 cd vidvaani &amp;&amp; uv sync
 
 <span class="c-comment"># quick taste — dubs the first 5 segments only</span>
-<span class="c-cmd">vidvaani</span> dub <span class="c-str">"https://youtube.com/watch?v=VIDEO_ID"</span>
+<span class="c-cmd">uv run vidvaani</span> dub <span class="c-str">"https://youtube.com/watch?v=VIDEO_ID"</span>
 
 <span class="c-comment"># full lecture, native Indian voice, plus subtitles</span>
-<span class="c-cmd">vidvaani</span> dub <span class="c-str">"https://youtube.com/watch?v=VIDEO_ID"</span> <span class="c-flag">--full</span> <span class="c-flag">-b</span> sarvam <span class="c-flag">-v</span> abhilash</div>
+<span class="c-cmd">uv run vidvaani</span> dub <span class="c-str">"https://youtube.com/watch?v=VIDEO_ID"</span> <span class="c-flag">--full</span> <span class="c-flag">-b</span> sarvam <span class="c-flag">-v</span> abhilash</div>
                 </div>
             </div>
         </section>
@@ -620,6 +621,8 @@ cd vidvaani &amp;&amp; uv sync
         <p>Built by <a href="https://nipunbatra.github.io" target="_blank">Nipun Batra</a> — Sustainability Lab, IIT Gandhinagar · MIT License</p>
         <div class="footer-links">
             <a href="https://github.com/nipunbatra/vidvaani" target="_blank">GitHub</a>
+            <a href="slides/vidvaani.html" target="_blank">Slides (HTML)</a>
+            <a href="slides/vidvaani.pdf" target="_blank">Slides (PDF)</a>
             <a href="https://sustainability-lab.github.io" target="_blank">Sustainability Lab</a>
         </div>
     </footer>

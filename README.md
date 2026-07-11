@@ -2,7 +2,7 @@
 
 AI-powered pipeline that dubs YouTube videos into Hindi. It downloads a video, transcribes it locally, translates the transcript, synthesizes natural Hindi speech, and reassembles the video — preserving intro music, pauses, and background audio.
 
-**Demo page:** https://nipunbatra.github.io/vidvaani/
+**Demo page:** https://nipunbatra.github.io/vidvaani/ · **Slides:** [HTML](https://nipunbatra.github.io/vidvaani/slides/vidvaani.html) / [PDF](https://nipunbatra.github.io/vidvaani/slides/vidvaani.pdf)
 
 ## Features
 
@@ -50,13 +50,13 @@ uv sync
 
 ```bash
 # Dub a YouTube video (demo mode - first 5 segments)
-vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID"
+uv run vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID"
 
 # Full video with a Sarvam voice
-vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID" --full -b sarvam -v abhilash
+uv run vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID" --full -b sarvam -v abhilash
 
 # With video title as folder name
-vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID" --full --title-folder
+uv run vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID" --full --title-folder
 ```
 
 ## Usage

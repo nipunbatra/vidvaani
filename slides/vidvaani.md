@@ -266,6 +266,24 @@ Every cloud stage now has a working local, open-weights replacement — measured
 
 ---
 
+# Alternative pipeline: cloning as a search, not a lottery
+
+The published cloned dub (v2) is machine-picked, not a lucky take — measured 12 Jul 2026, on-device:
+
+| Step | What | Result |
+|---|---|---|
+| Reference curation | 3 clean 18–23 s windows from the full lecture (not the clip intro), corrected transcripts | Reference choice dominates: +0.05 similarity by itself |
+| Best-of-16 grid | 4 refs × 2 temperatures × 2 seeds, 26 min, ₹0 | 80 candidate segments |
+| Objective scoring | ECAPA speaker embeddings vs 80 s of the real voice | Dub similarity **0.76 → 0.85** (real voice: 0.93, other voices: ~0.3) |
+| Rival backend | Chatterbox Multilingual-hi (PyTorch MPS, RTF 2.7) | 0.75 — good, but no segment beat Qwen3-TTS; adds a watermark |
+
+**Next rungs — honest caveat: these want a ~₹5 lakh GPU workstation (RTX 6000 Ada class), not a laptop:**
+
+1. **LoRA fine-tune Qwen3-TTS** on 30–60 min of the lecturer — bakes the voice in, no per-segment search.
+2. Scale the search + evaluate IndicF5 / Zonos2 properly; dub whole courses as overnight batches.
+
+---
+
 # Roadmap: smarter time alignment
 
 We surveyed the automatic-dubbing literature (Amazon, Microsoft, IIT Madras, IWSLT) and re-based the alignment design on it — full notes in `docs/timing-alignment.md`:

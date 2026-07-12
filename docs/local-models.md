@@ -20,6 +20,48 @@ Qwen3-TTS — MLX end to end, no ollama.
 End-to-end warm compute ≈ 187 s for the 58.5 s clip (~3.2× real-time, ₹0).
 At RTF 1.6 a 1-hour lecture is now a ~2–2.5 h batch, not an overnight one.
 
+## Improvement pass: cloning as a search, not a lottery (12 Jul 2026)
+
+v1 of the cloned dub used the first 28.5 s of the clip as reference and one
+take per segment. The published v2 replaced that with:
+
+1. **Reference curation** — the full lecture audio (same recording the clip
+   came from) transcribed locally (11 s); three contiguous clean-speech
+   windows (18–23 s, loudness-normalized to −20 LUFS, transcripts corrected
+   for Whisper mishearings) cut as candidate references. This mattered most:
+   mid-lecture references beat the clip-intro reference by ~+0.05 cosine on
+   their own, while merely cleaning/correcting the original intro window
+   changed nothing (0.690 → 0.693).
+2. **Best-of-16 grid** — 4 references × temperature {0.7, 0.9} × 2 seeds =
+   80 candidate segments in 26 min (per-take RTF unchanged at ~1.6).
+3. **Objective selection** — ECAPA-TDNN (`speechbrain/spkrec-ecapa-voxceleb`)
+   cosine similarity against a centroid of 8 × 10 s of real speech, disjoint
+   from every reference window. Per-segment winners stitched, then the normal
+   assembly (loudness −22.3 vs source −24.1 LUFS).
+
+Whole-file similarity to the real voice:
+
+| Audio | ECAPA cosine |
+|---|---|
+| Original English clip (same voice — ceiling) | 0.927 |
+| **v2 cloned dub (published)** | **0.854** |
+| v1 cloned dub | 0.758 |
+| Sarvam / Gemini / default-Qwen dubs (different voices — floor) | 0.29–0.36 |
+
+Per-segment: v1 config mean 0.690; best single grid config (ref @58 s,
+t = 0.7) 0.756; stitched winners 0.76–0.84. Gemini STT round-trip on v2:
+content-perfect. Whole improvement pass ≈ 45 min of compute, ₹0.
+
+**Chatterbox Multilingual-hi tried as a rival** (the survey's #1): PyTorch on
+MPS, RTF 2.69, config-mean similarity 0.747 — genuinely good, but no segment
+beat the scored Qwen3-TTS search, it embeds a Perth watermark, and it needs
+`setuptools<81` for a `pkg_resources` import. Kept as a fallback option.
+
+**Next rung — LoRA fine-tuning** Qwen3-TTS on 30–60 min of the lecturer's
+audio, which would bake the voice in and remove the per-segment search.
+Honest caveat: that is comfortably a GPU-workstation job (≈ ₹5 lakh,
+RTX 6000 Ada 48 GB class); on a laptop it is possible at best and untested.
+
 ## Measured results, first run (58 s demo clip, M-series Mac, 11 Jul 2026)
 
 | Stage | Model | Time | Notes |

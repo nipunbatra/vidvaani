@@ -351,9 +351,10 @@
         <section id="voices">
             <div class="wrap">
                 <div class="eyebrow">Pick a voice</div>
-                <h2>The same clip, nine ways</h2>
+                <h2>The same clip, ten ways</h2>
                 <p class="sub">
-                    A 58-second calculus explainer, re-voiced by each backend — same translation
+                    A 58-second probability clip (a joint-PDF question solved in GeoGebra),
+                    re-voiced by each backend — same translation
                     everywhere, so what you're comparing is purely the voice. The last card is
                     <strong>Sarvam's own dubbing product</strong> on the same clip — listen to how it turns
                     "area" into क्षेत्रफल, while VidVaani keeps the words students actually use.
@@ -414,6 +415,13 @@
                         <div class="voice-card-body">
                             <span class="voice-name">Fully local<span class="tag tag-original">Gemma 4 + Qwen3-TTS · ₹0</span></span>
                             <div class="voice-desc">Experimental: translated and voiced entirely on a laptop — no cloud involved.</div>
+                        </div>
+                    </div>
+                    <div class="voice-card">
+                        <video controls preload="metadata" poster="demo_videos/posters/local_cloned_gemma_qwen.jpg" src="demo_videos/mini_demo/local_cloned_gemma_qwen.mp4"></video>
+                        <div class="voice-card-body">
+                            <span class="voice-name">Your own voice<span class="tag tag-original">cloned · local · ₹0</span></span>
+                            <div class="voice-desc">The lecturer's voice, cloned on-device from 28&nbsp;s of his English in this very clip — now speaking Hindi. Published with his consent (he made this site).</div>
                         </div>
                     </div>
                     <div class="voice-card">
@@ -633,7 +641,7 @@ cd vidvaani &amp;&amp; uv sync
                     </div>
                     <div class="faq-card">
                         <h3>Can it run fully offline?</h3>
-                        <p>Yes — experimentally. Transcription is already local; swap Gemini for <strong>Gemma 4 12B</strong> (via ollama) and Sarvam for <strong>Qwen3-TTS</strong> (via MLX) and the whole pipeline runs on a Mac at ₹0: the "Fully local" card above was made this way (translation 25 s, speech ~4× real-time). Voice cloning from a 30-second reference also works locally — used only with the speaker's consent.</p>
+                        <p>Yes — experimentally. Transcription is already local; swap Gemini for <strong>Gemma 4</strong> and Sarvam for <strong>Qwen3-TTS</strong> (both via MLX) and the whole pipeline runs on a Mac at ₹0. The "Fully local" card used Gemma 4 12B + the default Qwen voice; the "Your own voice" card upgrades to <strong>Gemma 4 31B</strong> and <strong>clones the lecturer from 28 s of his English</strong> — measured July 2026: translation 59 s, cloned speech 1.6× real-time, ~3 min end-to-end for the 58 s clip. Cloned voices are published only with the speaker's consent.</p>
                     </div>
                     <div class="faq-card">
                         <h3>Only Hindi?</h3>

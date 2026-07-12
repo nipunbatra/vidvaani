@@ -3,7 +3,24 @@
 Survey (July 2026) plus measured experiments on Apple Silicon. Goal: replace
 the two cloud stages (translation, TTS) with local open-weights models.
 
-## Measured results (58 s demo clip, M-series Mac)
+## Measured results, second run (58 s probability clip, M-series Mac, 12 Jul 2026)
+
+Published as the "Your own voice" card on the demo page: the author's own
+probability clip (joint-PDF question in GeoGebra, from the mini-demo gallery),
+translated by **Gemma 4 31B** and spoken in **his own cloned voice** by
+Qwen3-TTS — MLX end to end, no ollama.
+
+| Stage | Model | Time | Notes |
+|---|---|---|---|
+| Transcribe | MLX Whisper distil-large-v3 | 23.4 s (5 segments) | Includes one-time model fetch; warm ≈ 4 s |
+| Translate | `mlx-community/gemma-4-31b-it-4bit` via `mlx-vlm` | 59.2 s (5 segments) | Warm model load 6.8 s (first load added a one-time 17 GB download). Followed word budgets; unlike the 12B run it did NOT fix Whisper mishearings ("Geozevra") |
+| TTS (cloned) | Qwen3-TTS 1.7B Base (`mlx-audio` 0.3.1) + 28.5 s English reference from the clip itself | 95.3 s for 58.3 s audio, **RTF 1.63** | Much faster than the July RTF ~4 (newer mlx-audio); model load 5.4 s. Gemini STT round-trip word-perfect; it even pronounced the misheard "Geozevra" close enough that STT heard "GeoGebra" |
+| Assemble | normal pipeline (trim, atempo fit, mix, loudnorm) | 9.0 s | Dub loudness −24.1 LUFS = source −24.1 LUFS |
+
+End-to-end warm compute ≈ 187 s for the 58.5 s clip (~3.2× real-time, ₹0).
+At RTF 1.6 a 1-hour lecture is now a ~2–2.5 h batch, not an overnight one.
+
+## Measured results, first run (58 s demo clip, M-series Mac, 11 Jul 2026)
 
 | Stage | Model | Time | Notes |
 |---|---|---|---|
@@ -14,15 +31,14 @@ the two cloud stages (translation, TTS) with local open-weights models.
 | Model load | Qwen3-TTS | 21.8 s once | |
 
 The "Fully local" card on the demo page = local Whisper + Gemma 4 12B +
-Qwen3-TTS (default voice), assembled by the normal pipeline. ₹0 per lecture;
-a 1-hour lecture is roughly an overnight batch at RTF ~4–5.
+Qwen3-TTS (default voice), assembled by the normal pipeline. ₹0 per lecture.
 
-**Voice cloning & consent:** the cloned-voice output is generated from a
-lecture by a third-party professor and is therefore NOT published; it lives in
-`experiments/voice_cloning/output/local_cloned_demo.mp4` for internal
-evaluation only. Publish cloned voices only with the speaker's consent — the
-compelling legitimate use is a lecturer dubbing their own course in their own
-voice.
+**Voice cloning & consent:** the first cloned-voice output (11 Jul) came from
+a lecture by a third-party professor and was therefore NOT published. The
+published "Your own voice" card (12 Jul) clones the author's own voice from
+his own clip — exactly the compelling legitimate use: a lecturer dubbing his
+own course in his own voice. Publish cloned voices only with the speaker's
+consent.
 
 ## TTS landscape for Hindi + voice cloning (researched July 2026)
 

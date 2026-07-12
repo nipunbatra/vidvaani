@@ -131,6 +131,18 @@ lecture (July 2026, Apple Silicon):
 Timing is dominated by the translation API; transcription is local. Re-runs
 with a different voice reuse cached transcripts and translations.
 
+## Fully local (experimental)
+
+The two cloud stages have working open-weights replacements, run entirely
+on-device via MLX: **Gemma 4** for translation and **Qwen3-TTS 1.7B** for
+speech, including cross-lingual voice cloning (an English reference of the
+lecturer speaking Hindi in their own voice). Measured on a 58 s clip
+(July 2026, Apple Silicon): translation 59 s with Gemma 4 31B 4-bit, cloned
+speech at 1.6× real-time, ~3 min end-to-end, Rs 0. See the "Fully local" and
+"Your own voice" cards on the demo page and the survey with all measured
+numbers in [docs/local-models.md](docs/local-models.md). Cloned voices are
+published only with the speaker's consent.
+
 ## Design notes
 
 How the pipeline fits Hindi speech into the original timing — and how that

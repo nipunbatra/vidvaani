@@ -245,7 +245,7 @@ What to listen for:
 - **No human review loop yet** — NPTEL's own effort treats faculty verification as essential for pedagogy; ₹80/lecture buys the draft, not the sign-off.
 - **Timing fit is still partly post-hoc** — word budgets plus a 0.95–1.35× speed clamp handle most segments, but very dense passages can still sound hurried (see next slide).
 - Gemini TTS models are **preview** — pricing and behaviour may change; Edge TTS is an unofficial free endpoint, fine for prototyping only.
-- No lip-sync. Voice cloning of the original lecturer now works locally (next slide) but is gated on **consent** — we do not publish cloned voices without the speaker's permission.
+- No lip-sync. Voice cloning of the original lecturer now works locally (next slide) and stays gated on **consent** — the one published cloned demo is the author's own voice on his own lecture.
 - Hindi first; Sarvam voices cover 11 Indian languages, so extension is natural.
 
 ---
@@ -257,11 +257,11 @@ Every cloud stage now has a working local, open-weights replacement — measured
 | Stage | Cloud (current) | Local (experimental) | Measured, local |
 |---|---|---|---|
 | Transcribe | — (already local) | MLX Whisper | 17–20 s per 7-min lecture |
-| Translate | Gemini 2.5 Flash | **Gemma 4 12B** (ollama, Apache-2.0) | 25 s for the clip |
-| Hindi speech | Sarvam API | **Qwen3-TTS 1.7B** (MLX, Apache-2.0) | ~4× real time |
+| Translate | Gemini 2.5 Flash | **Gemma 4 31B** (MLX 4-bit, Apache-2.0) | 59 s for the clip (12B via ollama: 25 s) |
+| Hindi speech | Sarvam API | **Qwen3-TTS 1.7B** (MLX, Apache-2.0) | **1.6× real time**, cloned (first run: ~4×) |
 
-- The "Fully local" demo card was produced this way — **₹0 per lecture, nothing leaves the machine**; a 1-hour lecture ≈ an overnight batch.
-- **Voice cloning works locally**: a 30 s English reference clip produces the same speaker's voice speaking Hindi (verified by STT round-trip). We use it only with the speaker's consent — a lecturer could dub their own course *in their own voice*.
+- The "Fully local" demo card was produced this way — **₹0 per lecture, nothing leaves the machine**; at RTF 1.6 a 1-hour lecture ≈ a 2–2.5 h batch.
+- **Voice cloning is now on the demo page**: the "Your own voice" card clones the author from 28 s of his English in the clip itself and speaks the Hindi dub in his voice — published with consent, since it is his own lecture (word-perfect STT round-trip, ~3 min end-to-end for the 58 s clip).
 - Indic-specialised alternatives (AI4Bharat IndicF5, Chatterbox-hi) may beat Qwen3-TTS on Hindi naturalness; evaluation ongoing (see `docs/local-models.md`).
 
 ---

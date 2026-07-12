@@ -1,6 +1,7 @@
 # Output files
 output/
 output_*/
+experiments/
 # demo_videos tracked selectively below
 demo_videos/linear_regression/
 

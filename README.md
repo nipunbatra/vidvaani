@@ -138,10 +138,16 @@ on-device via MLX: **Gemma 4** for translation and **Qwen3-TTS 1.7B** for
 speech, including cross-lingual voice cloning (an English reference of the
 lecturer speaking Hindi in their own voice). Measured on a 58 s clip
 (July 2026, Apple Silicon): translation 59 s with Gemma 4 31B 4-bit, cloned
-speech at 1.6× real-time, ~3 min end-to-end, Rs 0. See the "Fully local" and
-"Your own voice" cards on the demo page and the survey with all measured
-numbers in [docs/local-models.md](docs/local-models.md). Cloned voices are
-published only with the speaker's consent.
+speech at 1.6× real-time, ~3 min end-to-end, Rs 0.
+
+Voice-clone fidelity was then pushed in measured rungs — single take 0.76 →
+scored best-of-N search 0.85 → 7-minute laptop LoRA 0.86 → full SFT on a lab
+A100 trained on a 175-minute speaker-verified dataset → **0.89**, against a
+0.93 real-voice self-similarity ceiling (ECAPA cosine; other voices ~0.3),
+with an STT content check gating every published take. See the "Fully local"
+and "Your own voice" cards on the demo page and the full method + numbers in
+[docs/local-models.md](docs/local-models.md). Cloned voices are published
+only with the speaker's consent.
 
 ## Design notes
 

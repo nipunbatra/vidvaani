@@ -266,20 +266,21 @@ Every cloud stage now has a working local, open-weights replacement — measured
 
 ---
 
-# Alternative pipeline: cloning as a search, not a lottery
+# Cloning the lecturer's voice: five rungs in one day
 
-The published cloned dub (v2) is machine-picked, not a lucky take — measured 12 Jul 2026, on-device:
+Similarity = ECAPA cosine to the lecturer's real voice. His own recordings score **0.93** against each other (the ceiling); other voices score **~0.3**. All measured 12 Jul 2026.
 
-| Step | What | Result |
-|---|---|---|
-| Reference curation | 3 clean 18–23 s windows from the full lecture (not the clip intro), corrected transcripts | Reference choice dominates: +0.05 similarity by itself |
-| Best-of-16 grid | 4 refs × 2 temperatures × 2 seeds, 26 min, ₹0 | 80 candidates; dub similarity **0.76 → 0.85** (real voice: 0.93, others: ~0.3) |
-| Rival backend | Chatterbox Multilingual-hi (PyTorch MPS, RTF 2.7) | 0.75 — good, but no segment beat Qwen3-TTS; adds a watermark |
-| **LoRA fine-tune** | rank 16 on **30 min of the lecturer's real speech** — ECAPA-gated dataset, MLX, **7.5 min to train on the laptop** | Single takes beat the whole search (0.81 vs 0.76 config-mean) |
-| **Full SFT, lab A100** | official `sft_12hz.py`; scaled to a **175-min verified dataset** (18 videos speaker-checked, 1,777 gated utterances), 3 LR variants in parallel on 3 A100s | No-reference named voice works (0.75); best single-take mode: lr 2e-6, **epoch 0**, + restored speaker encoder = **0.83 mean / 0.87 best segment**; published dub **0.89** |
-| Content gate | STT round-trip on every published take | Caught the LoRA deduping a repeated clause AND the highest-similarity SFT take being fluent gibberish — similarity alone is not publishable |
+| Rung | Method | Compute | Dub similarity |
+|---|---|---|---|
+| 1 | Single take, ICL cloning from a 28 s reference | laptop, 95 s | 0.76 |
+| 2 | Best-of-16 search (4 curated refs × temp × seed), scored + stitched | laptop, ~45 min | 0.85 |
+| 3 | + LoRA fine-tune, rank 16 on 30 min of his verified speech | laptop (MLX), **7.5 min training** | 0.86 |
+| 4 | + official full SFT, community-corrected LR | lab A100, **~3 min training** | 0.89 |
+| 5 | + **175-min dataset** (18 videos speaker-verified, 1,777 gated utterances), 3-LR sweep on 3 A100s, restored speaker encoder | lab A100s, minutes per run | **0.89** — best takes 0.83–0.87 |
 
-**Compute ladder, measured**: laptop LoRA (7.5 min) → lab A100 full SFT (minutes per run; the ₹5 lakh tier or a lab server) → 3-variant sweep on 175 min of data. Two transferable lessons: **epoch 0 beat every later epoch in every variant**, and the official SFT silently drops the speaker-encoder weights from checkpoints — restore them from the base model before reference cloning.
+**What actually mattered** — in order: reference choice → fine-tuning on verified data → *early stopping* (epoch 0 won in **every** variant) → restoring the speaker-encoder weights the official SFT silently drops from checkpoints. Rungs 4–5 need the GPU tier (≈ ₹5 lakh workstation or a lab server); rungs 1–3 are a laptop.
+
+**And the guard-rail that made it publishable**: an STT round-trip on every take. It caught the LoRA silently deduping a repeated clause, and the single highest-similarity take of the project being fluent gibberish in his voice. Similarity alone is never a release criterion.
 
 ---
 

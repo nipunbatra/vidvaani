@@ -342,50 +342,52 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="18" data-paginate="true" data-header="VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar" lang="en-IN" data-marpit-pagination="18" style="--paginate:true;--header:VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar;" data-marpit-pagination-total="20">
 <header>VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar</header>
-<h1 id="alternative-pipeline-cloning-as-a-search-not-a-lottery">Alternative pipeline: cloning as a search, not a lottery</h1>
-<p>The published cloned dub (v2) is machine-picked, not a lucky take — measured 12 Jul 2026, on-device:</p>
+<h1 id="cloning-the-lecturers-voice-five-rungs-in-one-day">Cloning the lecturer's voice: five rungs in one day</h1>
+<p>Similarity = ECAPA cosine to the lecturer's real voice. His own recordings score <strong>0.93</strong> against each other (the ceiling); other voices score <strong>~0.3</strong>. All measured 12 Jul 2026.</p>
 <table>
 <thead>
 <tr>
-<th>Step</th>
-<th>What</th>
-<th>Result</th>
+<th>Rung</th>
+<th>Method</th>
+<th>Compute</th>
+<th>Dub similarity</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Reference curation</td>
-<td>3 clean 18–23 s windows from the full lecture (not the clip intro), corrected transcripts</td>
-<td>Reference choice dominates: +0.05 similarity by itself</td>
+<td>1</td>
+<td>Single take, ICL cloning from a 28 s reference</td>
+<td>laptop, 95 s</td>
+<td>0.76</td>
 </tr>
 <tr>
-<td>Best-of-16 grid</td>
-<td>4 refs × 2 temperatures × 2 seeds, 26 min, ₹0</td>
-<td>80 candidates; dub similarity <strong>0.76 → 0.85</strong> (real voice: 0.93, others: ~0.3)</td>
+<td>2</td>
+<td>Best-of-16 search (4 curated refs × temp × seed), scored + stitched</td>
+<td>laptop, ~45 min</td>
+<td>0.85</td>
 </tr>
 <tr>
-<td>Rival backend</td>
-<td>Chatterbox Multilingual-hi (PyTorch MPS, RTF 2.7)</td>
-<td>0.75 — good, but no segment beat Qwen3-TTS; adds a watermark</td>
+<td>3</td>
+<td>+ LoRA fine-tune, rank 16 on 30 min of his verified speech</td>
+<td>laptop (MLX), <strong>7.5 min training</strong></td>
+<td>0.86</td>
 </tr>
 <tr>
-<td><strong>LoRA fine-tune</strong></td>
-<td>rank 16 on <strong>30 min of the lecturer's real speech</strong> — ECAPA-gated dataset, MLX, <strong>7.5 min to train on the laptop</strong></td>
-<td>Single takes beat the whole search (0.81 vs 0.76 config-mean)</td>
+<td>4</td>
+<td>+ official full SFT, community-corrected LR</td>
+<td>lab A100, <strong>~3 min training</strong></td>
+<td>0.89</td>
 </tr>
 <tr>
-<td><strong>Full SFT, lab A100</strong></td>
-<td>official <code>sft_12hz.py</code>; scaled to a <strong>175-min verified dataset</strong> (18 videos speaker-checked, 1,777 gated utterances), 3 LR variants in parallel on 3 A100s</td>
-<td>No-reference named voice works (0.75); best single-take mode: lr 2e-6, <strong>epoch 0</strong>, + restored speaker encoder = <strong>0.83 mean / 0.87 best segment</strong>; published dub <strong>0.89</strong></td>
-</tr>
-<tr>
-<td>Content gate</td>
-<td>STT round-trip on every published take</td>
-<td>Caught the LoRA deduping a repeated clause AND the highest-similarity SFT take being fluent gibberish — similarity alone is not publishable</td>
+<td>5</td>
+<td>+ <strong>175-min dataset</strong> (18 videos speaker-verified, 1,777 gated utterances), 3-LR sweep on 3 A100s, restored speaker encoder</td>
+<td>lab A100s, minutes per run</td>
+<td><strong>0.89</strong> — best takes 0.83–0.87</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Compute ladder, measured</strong>: laptop LoRA (7.5 min) → lab A100 full SFT (minutes per run; the ₹5 lakh tier or a lab server) → 3-variant sweep on 175 min of data. Two transferable lessons: <strong>epoch 0 beat every later epoch in every variant</strong>, and the official SFT silently drops the speaker-encoder weights from checkpoints — restore them from the base model before reference cloning.</p>
+<p><strong>What actually mattered</strong> — in order: reference choice → fine-tuning on verified data → <em>early stopping</em> (epoch 0 won in <strong>every</strong> variant) → restoring the speaker-encoder weights the official SFT silently drops from checkpoints. Rungs 4–5 need the GPU tier (≈ ₹5 lakh workstation or a lab server); rungs 1–3 are a laptop.</p>
+<p><strong>And the guard-rail that made it publishable</strong>: an STT round-trip on every take. It caught the LoRA silently deduping a repeated clause, and the single highest-similarity take of the project being fluent gibberish in his voice. Similarity alone is never a release criterion.</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="19" data-paginate="true" data-header="VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar" lang="en-IN" data-marpit-pagination="19" style="--paginate:true;--header:VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar;" data-marpit-pagination-total="20">
 <header>VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar</header>

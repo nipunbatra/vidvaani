@@ -20,3 +20,4 @@ __pycache__/
 
 # Lock file (optional, can include if you want reproducibility)
 # uv.lock
+out/

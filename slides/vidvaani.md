@@ -217,7 +217,7 @@ Every run reports its own timing and cost — the numbers on the previous slides
 
 **nipunbatra.github.io/vidvaani** — plays in any browser:
 
-1. **58-second calculus clip, eight ways** — original, Sarvam and Gemini voices (same translation, so the comparison is purely the voice), plus Sarvam's own Dashboard output.
+1. **58-second probability clip, ten ways** — original, Sarvam and Gemini voices (same translation, so the comparison is purely the voice), a **fully local** Gemma 4 + Qwen3-TTS version, the **lecturer's own cloned voice** (fine-tuned, 0.89 similarity), and Sarvam's own Dashboard output.
 2. **Full 7-minute NPTEL lecture** — original beside Hindi dub; intro music preserved; five voices; burned-in subtitles.
 
 What to listen for:
@@ -268,19 +268,32 @@ Every cloud stage now has a working local, open-weights replacement — measured
 
 # Cloning the lecturer's voice: five rungs in one day
 
-Similarity = ECAPA cosine to the lecturer's real voice. His own recordings score **0.93** against each other (the ceiling); other voices score **~0.3**. All measured 12 Jul 2026.
+Similarity = ECAPA cosine to his real voice. His own recordings score **0.93** against each other (the ceiling); other voices **~0.3**. Measured 12 Jul 2026.
 
-| Rung | Method | Compute | Dub similarity |
+| Rung | Method | Compute | Similarity |
 |---|---|---|---|
-| 1 | Single take, ICL cloning from a 28 s reference | laptop, 95 s | 0.76 |
-| 2 | Best-of-16 search (4 curated refs × temp × seed), scored + stitched | laptop, ~45 min | 0.85 |
-| 3 | + LoRA fine-tune, rank 16 on 30 min of his verified speech | laptop (MLX), **7.5 min training** | 0.86 |
-| 4 | + official full SFT, community-corrected LR | lab A100, **~3 min training** | 0.89 |
-| 5 | + **175-min dataset** (18 videos speaker-verified, 1,777 gated utterances), 3-LR sweep on 3 A100s, restored speaker encoder | lab A100s, minutes per run | **0.89** — best takes 0.83–0.87 |
+| 1 | Single take, cloned from a 28 s reference | laptop, 95 s | 0.76 |
+| 2 | Best-of-16 search, scored + stitched | laptop, ~45 min | 0.85 |
+| 3 | + LoRA fine-tune on 30 min of his speech | laptop, **7.5 min training** | 0.86 |
+| 4 | + official full SFT | lab A100, **~3 min training** | 0.89 |
+| 5 | + 175-min verified dataset, 3-LR sweep | 3 × A100 | **0.89**, best takes 0.83–0.87 |
 
-**What actually mattered** — in order: reference choice → fine-tuning on verified data → *early stopping* (epoch 0 won in **every** variant) → restoring the speaker-encoder weights the official SFT silently drops from checkpoints. Rungs 4–5 need the GPU tier (≈ ₹5 lakh workstation or a lab server); rungs 1–3 are a laptop.
+Rungs 1–3 are a laptop; rungs 4–5 need the GPU tier — a ≈ ₹5 lakh workstation, or a lab server.
 
-**And the guard-rail that made it publishable**: an STT round-trip on every take. It caught the LoRA silently deduping a repeated clause, and the single highest-similarity take of the project being fluent gibberish in his voice. Similarity alone is never a release criterion.
+<div class="foot">Rung 5 dataset: 18 channel videos speaker-verified with ECAPA; 6,610 utterances cut, 1,777 kept (per-source gates 0.60–0.72). Full method and numbers: docs/local-models.md.</div>
+
+---
+
+# What moved the needle — and the guard-rail
+
+**In order of impact:**
+
+1. **Reference choice** — a clean mid-lecture window beat the clip's intro by +0.05 on its own.
+2. **Fine-tuning on verified data** — every training clip ECAPA-checked against his voice; two candidate source videos failed verification outright and were rejected.
+3. **Early stopping** — epoch 0 beat every later epoch, in *every* variant. More steps ≠ more you.
+4. **Restoring the speaker encoder** — the official SFT silently drops those weights from checkpoints; reference cloning then runs on random weights until they are merged back.
+
+**The guard-rail: an STT round-trip on every published take.** It caught the LoRA silently deduping a repeated clause ("x range 0–2 … y range 0–2" losing the y), and the single highest-similarity take of the project being fluent gibberish in his voice. **Similarity alone is never a release criterion.**
 
 ---
 
@@ -307,6 +320,7 @@ We surveyed the automatic-dubbing literature (Amazon, Microsoft, IIT Madras, IWS
 - **Any lecture → natural Hindi dub in minutes**: one command, six automated stages, technical vocabulary preserved.
 - **Measured, not estimated**: a 7-min lecture in ~3 minutes for under ₹10; ≈ ₹80–110 per lecture-hour; a 40-lecture course for the price of a textbook.
 - **20–100× cheaper** than commercial dubbing platforms, with editorial control none of them offer.
+- **Runs fully offline if needed** — and can speak the dub in **the lecturer's own cloned voice** (0.89 similarity to his real voice, consent-gated, every take content-checked).
 - Open source (MIT): **github.com/nipunbatra/vidvaani**
 - Live demos: **nipunbatra.github.io/vidvaani**
 

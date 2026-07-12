@@ -113,9 +113,36 @@ of the lab's A100-80GB GPUs (Ramanujan) with the same 294-utterance dataset:
   similarity **0.887** vs the 0.927 real-voice ceiling (v1 0.758,
   search 0.854, laptop LoRA 0.861).
 
-**Where even bigger compute enters next**: multi-speaker SFT, larger Qwen3-TTS
-variants when released, batch-dubbing whole courses, and closing the last
-0.04 — likely more/cleaner data rather than more steps.
+## Scaling the data: 175-minute dataset + variant sweep (12 Jul 2026, night)
+
+18 candidate videos from the channel were speaker-verified (5 sampled windows
+each, ECAPA vs the probability-lecture centroid). All were genuinely the
+author (0.64–0.84 — spread is mic/era), but two earlier picks had already
+failed outright (0.45/0.57), so per-utterance gating stays mandatory. From
+~8 h of raw audio: 6,610 utterances cut, **1,777 kept (175 min)** after
+per-source thresholds (0.60–0.72; the classroom CS203 lectures contributed
+only their cleanest ~420 clips).
+
+Three SFT variants trained in parallel on three A100s (lr 1e-6 / 2e-6 /
+5e-6, batch 32): **lr 2e-6 at epoch 0 wins again** — early stopping beat
+epochs 1–3 in every variant.
+
+**Bug found in the official SFT**: checkpoints do not save the
+`speaker_encoder.*` weights, so reloading one for reference cloning leaves a
+randomly-initialized speaker encoder (transformers prints the warning; easy
+to miss). Restoring the base model's speaker-encoder tensors into the
+checkpoint lifted the best config to **0.826 mean / 0.865 best segment** —
+the strongest single-take numbers of the whole project.
+
+Published dub v5 (best gated take per segment across all methods):
+**0.889 whole-file** (v1 0.758 → search 0.854 → LoRA 0.861 → SFT 0.887 →
+0.889). The repetitive segment still defeats every fine-tuned model (clause
+dedup or mispronunciation at any seed) and keeps its searched base-model
+take — repetitive phrasing is the one robust failure mode found.
+
+**Next**: the remaining ~0.04 to the 0.927 self-similarity ceiling appears
+dominated by codec/channel artifacts and the Hindi/English language shift,
+not identity — listening tests matter more than this metric from here.
 
 ## Measured results, first run (58 s demo clip, M-series Mac, 11 Jul 2026)
 

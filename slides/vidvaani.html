@@ -375,8 +375,8 @@
 </tr>
 <tr>
 <td><strong>Full SFT, lab A100</strong></td>
-<td>official <code>sft_12hz.py</code>, 10 epochs in <strong>~3 min</strong> on one A100-80GB</td>
-<td>No-reference named voice now works (0.75); SFT + reference = best mode (<strong>0.81</strong> single-take, epoch 0); published dub <strong>0.89</strong></td>
+<td>official <code>sft_12hz.py</code>; scaled to a <strong>175-min verified dataset</strong> (18 videos speaker-checked, 1,777 gated utterances), 3 LR variants in parallel on 3 A100s</td>
+<td>No-reference named voice works (0.75); best single-take mode: lr 2e-6, <strong>epoch 0</strong>, + restored speaker encoder = <strong>0.83 mean / 0.87 best segment</strong>; published dub <strong>0.89</strong></td>
 </tr>
 <tr>
 <td>Content gate</td>
@@ -385,7 +385,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Compute ladder, measured</strong>: laptop LoRA (7.5 min) → lab A100 full SFT (3 min, needs the GPU box — the ₹5 lakh tier or a lab server) → next: more/cleaner data, multi-speaker SFT, whole-course batch dubbing. Early stopping wins: epoch 0 beat epochs 2–9 on voice similarity.</p>
+<p><strong>Compute ladder, measured</strong>: laptop LoRA (7.5 min) → lab A100 full SFT (minutes per run; the ₹5 lakh tier or a lab server) → 3-variant sweep on 175 min of data. Two transferable lessons: <strong>epoch 0 beat every later epoch in every variant</strong>, and the official SFT silently drops the speaker-encoder weights from checkpoints — restore them from the base model before reference cloning.</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="19" data-paginate="true" data-header="VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar" lang="en-IN" data-marpit-pagination="19" style="--paginate:true;--header:VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar;" data-marpit-pagination-total="20">
 <header>VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar</header>

@@ -57,10 +57,40 @@ MPS, RTF 2.69, config-mean similarity 0.747 — genuinely good, but no segment
 beat the scored Qwen3-TTS search, it embeds a Perth watermark, and it needs
 `setuptools<81` for a `pkg_resources` import. Kept as a fallback option.
 
-**Next rung — LoRA fine-tuning** Qwen3-TTS on 30–60 min of the lecturer's
-audio, which would bake the voice in and remove the per-segment search.
-Honest caveat: that is comfortably a GPU-workstation job (≈ ₹5 lakh,
-RTX 6000 Ada 48 GB class); on a laptop it is possible at best and untested.
+## LoRA fine-tuning pass (12 Jul 2026, same day)
+
+Speaker-LoRA on Qwen3-TTS 1.7B via `akashicMarga/mlx-audio-train` (pipeline 2:
+LoRA + speaker-embedding injection, mirrors the official `sft_12hz.py`) —
+**ran entirely on the Mac in 7.5 minutes**, no GPU workstation needed.
+
+- **Dataset**: 3 of Nipun's real screencasts → 294 utterances / 30.0 min at
+  24 kHz. Every utterance ECAPA-gated (≥ 0.60 vs his voice centroid; 41
+  dropped). Two initially planned source videos were rejected wholesale —
+  they scored 0.45/0.57, i.e. NOT the same voice/recording. Always verify
+  sources: his channel also hosts ElevenLabs-cloned Manim videos.
+- **Training**: rank 16, alpha 32, all attention+MLP modules, 19.2 M
+  trainable params (0.99%), 51 steps / 3 epochs, loss 13.0 → 8.4. Needed
+  `mlx-audio 0.4.5` (0.3.1 has a bug that drops the codec encoder) and a
+  bfloat16 fix in the bake script.
+- **Result**: half-strength adapter + ICL reference gives **0.807 single-take
+  similarity** — beating the best searched config (0.756) and 4/5 per-segment
+  search winners, at RTF 1.15 with no search. Full-strength application
+  over-steers (0.73), matching community advice to attach TTS speaker LoRAs
+  at ~0.3–0.5 scale.
+- **Published dub** (LoRA takes content-gated by STT round-trip, searched
+  takes where the LoRA failed the gate): whole-file similarity **0.861**
+  vs v2's 0.854, ceiling 0.927.
+- **Two honest failures**: (1) the baked no-reference voice slot
+  (codec_embedding[3000]) is unusable at 3 epochs — 0.083 similarity plus a
+  runaway no-EOS generation; (2) the LoRA systematically *dedupes* repeated
+  phrases ("x range 0–2 … y range 0–2" loses the y clause, at any seed and
+  with repetition_penalty 1.0) — caught by the STT content gate, fixed by
+  falling back to a searched take for that segment.
+
+**Where a ≈ ₹5 lakh GPU workstation genuinely enters**: full SFT (the
+official script), longer training to make the baked no-reference voice
+stable, and batch-dubbing whole courses — not rank-16 LoRA, which a laptop
+handles in minutes.
 
 ## Measured results, first run (58 s demo clip, M-series Mac, 11 Jul 2026)
 

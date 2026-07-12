@@ -421,7 +421,7 @@
                         <video controls preload="metadata" poster="demo_videos/posters/local_cloned_gemma_qwen.jpg" src="demo_videos/mini_demo/local_cloned_gemma_qwen.mp4"></video>
                         <div class="voice-card-body">
                             <span class="voice-name">Your own voice<span class="tag tag-original">cloned · local · ₹0</span></span>
-                            <div class="voice-desc">The lecturer's voice, cloned on-device from ~20&nbsp;s of his English lecture audio — best take of an automatic 16-take search scored against his real voice. Published with his consent (he made this site).</div>
+                            <div class="voice-desc">The lecturer's voice: a 7-minute LoRA fine-tune on 30&nbsp;min of his real lectures + reference cloning, takes scored against his real voice and content-checked by STT. All on-device. Published with his consent (he made this site).</div>
                         </div>
                     </div>
                     <div class="voice-card">
@@ -641,7 +641,7 @@ cd vidvaani &amp;&amp; uv sync
                     </div>
                     <div class="faq-card">
                         <h3>Can it run fully offline?</h3>
-                        <p>Yes — experimentally. Transcription is already local; swap Gemini for <strong>Gemma 4</strong> and Sarvam for <strong>Qwen3-TTS</strong> (both via MLX) and the whole pipeline runs on a Mac at ₹0. The "Fully local" card used Gemma 4 12B + the default Qwen voice; the "Your own voice" card upgrades to <strong>Gemma 4 31B</strong> and <strong>clones the lecturer from 28 s of his English</strong> — measured July 2026: translation 59 s, cloned speech 1.6× real-time, ~3 min end-to-end for the 58 s clip. A best-of-16 search scored with speaker embeddings (~45 min extra, still ₹0) lifted voice similarity from 0.76 to 0.85 — his real voice scores 0.93 against itself, other voices ~0.3. Cloned voices are published only with the speaker's consent.</p>
+                        <p>Yes — experimentally. Transcription is already local; swap Gemini for <strong>Gemma 4</strong> and Sarvam for <strong>Qwen3-TTS</strong> (both via MLX) and the whole pipeline runs on a Mac at ₹0. The "Fully local" card used Gemma 4 12B + the default Qwen voice; the "Your own voice" card upgrades to <strong>Gemma 4 31B</strong> and <strong>clones the lecturer from 28 s of his English</strong> — measured July 2026: translation 59 s, cloned speech 1.6× real-time, ~3 min end-to-end for the 58 s clip. A best-of-16 search scored with speaker embeddings lifted voice similarity from 0.76 to 0.85, and a <strong>7-minute LoRA fine-tune</strong> (MLX, rank 16, 30 min of the lecturer's real speech) pushed single-take quality past the whole search — final published dub: 0.86 (his real voice scores 0.93 against itself, other voices ~0.3). All still ₹0, all on a laptop. Cloned voices are published only with the speaker's consent.</p>
                     </div>
                     <div class="faq-card">
                         <h3>Only Hindi?</h3>

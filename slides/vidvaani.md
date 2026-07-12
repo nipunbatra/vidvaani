@@ -273,14 +273,15 @@ The published cloned dub (v2) is machine-picked, not a lucky take — measured 1
 | Step | What | Result |
 |---|---|---|
 | Reference curation | 3 clean 18–23 s windows from the full lecture (not the clip intro), corrected transcripts | Reference choice dominates: +0.05 similarity by itself |
-| Best-of-16 grid | 4 refs × 2 temperatures × 2 seeds, 26 min, ₹0 | 80 candidate segments |
-| Objective scoring | ECAPA speaker embeddings vs 80 s of the real voice | Dub similarity **0.76 → 0.85** (real voice: 0.93, other voices: ~0.3) |
+| Best-of-16 grid | 4 refs × 2 temperatures × 2 seeds, 26 min, ₹0 | 80 candidates; dub similarity **0.76 → 0.85** (real voice: 0.93, others: ~0.3) |
 | Rival backend | Chatterbox Multilingual-hi (PyTorch MPS, RTF 2.7) | 0.75 — good, but no segment beat Qwen3-TTS; adds a watermark |
+| **LoRA fine-tune** | rank 16 on **30 min of the lecturer's real speech** — ECAPA-gated dataset, MLX, **7.5 min to train on the laptop** | Single takes now beat the whole search (0.81 vs 0.76 config-mean); published dub **0.86**, no search loop needed |
+| Content gate | STT round-trip on every published take | Caught the LoRA silently deduping a repeated clause — one segment fell back to a searched take |
 
-**Next rungs — honest caveat: these want a ~₹5 lakh GPU workstation (RTX 6000 Ada class), not a laptop:**
+**Where the ~₹5 lakh GPU workstation (RTX 6000 Ada class) genuinely enters** — LoRA itself turned out to be a laptop job:
 
-1. **LoRA fine-tune Qwen3-TTS** on 30–60 min of the lecturer — bakes the voice in, no per-segment search.
-2. Scale the search + evaluate IndicF5 / Zonos2 properly; dub whole courses as overnight batches.
+1. **Full SFT / longer training** to make the *no-reference* baked voice stable (unusable at 3 laptop epochs).
+2. Batch-dubbing whole courses; proper IndicF5 / Zonos2 evaluation at scale.
 
 ---
 

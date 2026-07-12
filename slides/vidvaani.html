@@ -361,24 +361,29 @@
 <tr>
 <td>Best-of-16 grid</td>
 <td>4 refs × 2 temperatures × 2 seeds, 26 min, ₹0</td>
-<td>80 candidate segments</td>
-</tr>
-<tr>
-<td>Objective scoring</td>
-<td>ECAPA speaker embeddings vs 80 s of the real voice</td>
-<td>Dub similarity <strong>0.76 → 0.85</strong> (real voice: 0.93, other voices: ~0.3)</td>
+<td>80 candidates; dub similarity <strong>0.76 → 0.85</strong> (real voice: 0.93, others: ~0.3)</td>
 </tr>
 <tr>
 <td>Rival backend</td>
 <td>Chatterbox Multilingual-hi (PyTorch MPS, RTF 2.7)</td>
 <td>0.75 — good, but no segment beat Qwen3-TTS; adds a watermark</td>
 </tr>
+<tr>
+<td><strong>LoRA fine-tune</strong></td>
+<td>rank 16 on <strong>30 min of the lecturer's real speech</strong> — ECAPA-gated dataset, MLX, <strong>7.5 min to train on the laptop</strong></td>
+<td>Single takes now beat the whole search (0.81 vs 0.76 config-mean); published dub <strong>0.86</strong>, no search loop needed</td>
+</tr>
+<tr>
+<td>Content gate</td>
+<td>STT round-trip on every published take</td>
+<td>Caught the LoRA silently deduping a repeated clause — one segment fell back to a searched take</td>
+</tr>
 </tbody>
 </table>
-<p><strong>Next rungs — honest caveat: these want a ~₹5 lakh GPU workstation (RTX 6000 Ada class), not a laptop:</strong></p>
+<p><strong>Where the ~₹5 lakh GPU workstation (RTX 6000 Ada class) genuinely enters</strong> — LoRA itself turned out to be a laptop job:</p>
 <ol>
-<li><strong>LoRA fine-tune Qwen3-TTS</strong> on 30–60 min of the lecturer — bakes the voice in, no per-segment search.</li>
-<li>Scale the search + evaluate IndicF5 / Zonos2 properly; dub whole courses as overnight batches.</li>
+<li><strong>Full SFT / longer training</strong> to make the <em>no-reference</em> baked voice stable (unusable at 3 laptop epochs).</li>
+<li>Batch-dubbing whole courses; proper IndicF5 / Zonos2 evaluation at scale.</li>
 </ol>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="19" data-paginate="true" data-header="VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar" lang="en-IN" data-marpit-pagination="19" style="--paginate:true;--header:VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar;" data-marpit-pagination-total="20">

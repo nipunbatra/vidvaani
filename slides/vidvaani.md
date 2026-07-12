@@ -275,13 +275,11 @@ The published cloned dub (v2) is machine-picked, not a lucky take — measured 1
 | Reference curation | 3 clean 18–23 s windows from the full lecture (not the clip intro), corrected transcripts | Reference choice dominates: +0.05 similarity by itself |
 | Best-of-16 grid | 4 refs × 2 temperatures × 2 seeds, 26 min, ₹0 | 80 candidates; dub similarity **0.76 → 0.85** (real voice: 0.93, others: ~0.3) |
 | Rival backend | Chatterbox Multilingual-hi (PyTorch MPS, RTF 2.7) | 0.75 — good, but no segment beat Qwen3-TTS; adds a watermark |
-| **LoRA fine-tune** | rank 16 on **30 min of the lecturer's real speech** — ECAPA-gated dataset, MLX, **7.5 min to train on the laptop** | Single takes now beat the whole search (0.81 vs 0.76 config-mean); published dub **0.86**, no search loop needed |
-| Content gate | STT round-trip on every published take | Caught the LoRA silently deduping a repeated clause — one segment fell back to a searched take |
+| **LoRA fine-tune** | rank 16 on **30 min of the lecturer's real speech** — ECAPA-gated dataset, MLX, **7.5 min to train on the laptop** | Single takes beat the whole search (0.81 vs 0.76 config-mean) |
+| **Full SFT, lab A100** | official `sft_12hz.py`, 10 epochs in **~3 min** on one A100-80GB | No-reference named voice now works (0.75); SFT + reference = best mode (**0.81** single-take, epoch 0); published dub **0.89** |
+| Content gate | STT round-trip on every published take | Caught the LoRA deduping a repeated clause AND the highest-similarity SFT take being fluent gibberish — similarity alone is not publishable |
 
-**Where the ~₹5 lakh GPU workstation (RTX 6000 Ada class) genuinely enters** — LoRA itself turned out to be a laptop job:
-
-1. **Full SFT / longer training** to make the *no-reference* baked voice stable (unusable at 3 laptop epochs).
-2. Batch-dubbing whole courses; proper IndicF5 / Zonos2 evaluation at scale.
+**Compute ladder, measured**: laptop LoRA (7.5 min) → lab A100 full SFT (3 min, needs the GPU box — the ₹5 lakh tier or a lab server) → next: more/cleaner data, multi-speaker SFT, whole-course batch dubbing. Early stopping wins: epoch 0 beat epochs 2–9 on voice similarity.
 
 ---
 

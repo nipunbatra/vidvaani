@@ -87,10 +87,35 @@ LoRA + speaker-embedding injection, mirrors the official `sft_12hz.py`) —
   with repetition_penalty 1.0) — caught by the STT content gate, fixed by
   falling back to a searched take for that segment.
 
-**Where a ≈ ₹5 lakh GPU workstation genuinely enters**: full SFT (the
-official script), longer training to make the baked no-reference voice
-stable, and batch-dubbing whole courses — not rank-16 LoRA, which a laptop
-handles in minutes.
+## Full SFT on a lab A100 (12 Jul 2026, evening)
+
+The official `QwenLM/Qwen3-TTS` single-speaker SFT (`sft_12hz.py`), run on one
+of the lab's A100-80GB GPUs (Ramanujan) with the same 294-utterance dataset:
+
+- **Setup quirks**: needs a local model path (no hub auto-download);
+  `attn_implementation` hardcoded to flash_attention_2 (patched to sdpa);
+  torch/torchaudio pinned to cu126 for the 565 driver; project-local HF_HOME
+  (shared cache is root-owned). LR 2e-6 (community-corrected; default 2e-5 is
+  known to produce noise), batch 16.
+- **Speed**: 10 epochs / 180 steps in ~3 minutes. Loss 10.1 → 8.7.
+- **No-reference named speaker now works**: `generate_custom_voice(speaker=
+  "nipun")` scores 0.72–0.75 across all epochs — where the 3-epoch laptop
+  bake scored 0.083. Flat across epochs; identity comes from the speaker-
+  embedding path, not more steps.
+- **SFT + ICL reference is the best mode measured so far**: epoch-0
+  checkpoint + the R2 reference = single-take mean **0.814** (later epochs
+  slightly worse — early stopping wins).
+- **The content gate stays essential**: the SFT take with the HIGHEST
+  similarity on the repetitive segment (0.828) was hallucinated English
+  gibberish; a second take slurred a word. Similarity without an STT check
+  is not publishable.
+- **Published dub** (gated best of LoRA + SFT + search): whole-file
+  similarity **0.887** vs the 0.927 real-voice ceiling (v1 0.758,
+  search 0.854, laptop LoRA 0.861).
+
+**Where even bigger compute enters next**: multi-speaker SFT, larger Qwen3-TTS
+variants when released, batch-dubbing whole courses, and closing the last
+0.04 — likely more/cleaner data rather than more steps.
 
 ## Measured results, first run (58 s demo clip, M-series Mac, 11 Jul 2026)
 

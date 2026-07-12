@@ -371,20 +371,21 @@
 <tr>
 <td><strong>LoRA fine-tune</strong></td>
 <td>rank 16 on <strong>30 min of the lecturer's real speech</strong> — ECAPA-gated dataset, MLX, <strong>7.5 min to train on the laptop</strong></td>
-<td>Single takes now beat the whole search (0.81 vs 0.76 config-mean); published dub <strong>0.86</strong>, no search loop needed</td>
+<td>Single takes beat the whole search (0.81 vs 0.76 config-mean)</td>
+</tr>
+<tr>
+<td><strong>Full SFT, lab A100</strong></td>
+<td>official <code>sft_12hz.py</code>, 10 epochs in <strong>~3 min</strong> on one A100-80GB</td>
+<td>No-reference named voice now works (0.75); SFT + reference = best mode (<strong>0.81</strong> single-take, epoch 0); published dub <strong>0.89</strong></td>
 </tr>
 <tr>
 <td>Content gate</td>
 <td>STT round-trip on every published take</td>
-<td>Caught the LoRA silently deduping a repeated clause — one segment fell back to a searched take</td>
+<td>Caught the LoRA deduping a repeated clause AND the highest-similarity SFT take being fluent gibberish — similarity alone is not publishable</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Where the ~₹5 lakh GPU workstation (RTX 6000 Ada class) genuinely enters</strong> — LoRA itself turned out to be a laptop job:</p>
-<ol>
-<li><strong>Full SFT / longer training</strong> to make the <em>no-reference</em> baked voice stable (unusable at 3 laptop epochs).</li>
-<li>Batch-dubbing whole courses; proper IndicF5 / Zonos2 evaluation at scale.</li>
-</ol>
+<p><strong>Compute ladder, measured</strong>: laptop LoRA (7.5 min) → lab A100 full SFT (3 min, needs the GPU box — the ₹5 lakh tier or a lab server) → next: more/cleaner data, multi-speaker SFT, whole-course batch dubbing. Early stopping wins: epoch 0 beat epochs 2–9 on voice similarity.</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="19" data-paginate="true" data-header="VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar" lang="en-IN" data-marpit-pagination="19" style="--paginate:true;--header:VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar;" data-marpit-pagination-total="20">
 <header>VidVaani — Automated Hindi dubbing of technical lectures · IIT Gandhinagar</header>

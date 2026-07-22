@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f0e9">
+  <meta name="description" content="VidVaani processing control room for observable English-to-Hindi video dubbing.">
+  <title>VidVaani — Processing Control Room</title>
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="VidVaani home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span>VIDVAANI</span>
+      <small>PROCESS CONTROL</small>
+    </a>
+    <div class="topbar-meta">
+      <span class="machine-label">LOCAL PIPELINE</span>
+      <button class="system-pill" id="system-pill" type="button" aria-expanded="false" aria-controls="system-popover">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="system-label">Checking system</span>
+      </button>
+    </div>
+    <aside class="system-popover" id="system-popover" hidden>
+      <div class="popover-head">
+        <span>Runtime readiness</span>
+        <button class="icon-button" id="close-system" type="button" aria-label="Close runtime readiness">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+      <div class="service-list" id="service-list"></div>
+      <p class="popover-note">Credentials stay in your environment. This page receives readiness flags only.</p>
+    </aside>
+  </header>
+
+  <main class="app-shell">
+    <aside class="control-rail">
+      <div class="rail-heading">
+        <span class="kicker">NEW PROCESS</span>
+        <h1>Dub a lecture into Hindi.</h1>
+        <p>Configure once, then inspect every transformation as it happens.</p>
+      </div>
+
+      <form id="job-form" novalidate>
+        <div class="field-group">
+          <label for="source-url">YouTube source</label>
+          <div class="url-field">
+            <span class="field-prefix" aria-hidden="true">URL</span>
+            <input id="source-url" name="url" type="url" autocomplete="url" required
+              placeholder="https://youtube.com/watch?v=…"
+              value="https://www.youtube.com/watch?v=UuoVhUqWAFc">
+          </div>
+          <p class="helper">Preset: Nipun Batra — 2D integration, GeoGebra, joint distributions.</p>
+          <p class="field-error" id="url-error" role="alert"></p>
+        </div>
+
+        <fieldset class="field-group">
+          <legend>Speech engine</legend>
+          <div class="engine-switch" id="engine-switch">
+            <label>
+              <input type="radio" name="backend" value="sarvam" checked>
+              <span>Sarvam</span>
+            </label>
+            <label>
+              <input type="radio" name="backend" value="gemini">
+              <span>Gemini</span>
+            </label>
+            <label>
+              <input type="radio" name="backend" value="edge">
+              <span>Edge</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="form-grid">
+          <div class="field-group">
+            <label for="voice-select">Voice</label>
+            <select id="voice-select" name="voice"></select>
+          </div>
+          <div class="field-group">
+            <label for="segment-limit">Run length</label>
+            <select id="segment-limit" name="max_segments">
+              <option value="5">5 segments</option>
+              <option value="20">20 segments</option>
+              <option value="-1">Full video</option>
+            </select>
+          </div>
+        </div>
+        <div class="voice-profile" id="voice-profile" aria-live="polite">
+          <span class="voice-profile-meta" id="voice-profile-meta">Male · Steady lecture tone</span>
+          <p id="voice-profile-description">Native Indian prosody; measured and dependable for technical explanations.</p>
+        </div>
+
+        <details class="advanced-panel">
+          <summary>
+            <span>Timing & audio</span>
+            <span class="summary-note">Advanced</span>
+          </summary>
+          <div class="advanced-content">
+            <label class="toggle-row">
+              <span>
+                <strong>Preserve non-speech</strong>
+                <small>Keep music and natural pauses from the source.</small>
+              </span>
+              <input type="checkbox" name="preserve_non_speech" checked>
+              <i aria-hidden="true"></i>
+            </label>
+            <label class="toggle-row">
+              <span>
+                <strong>Reuse cached translation</strong>
+                <small>Skip repeated work when artifacts already exist.</small>
+              </span>
+              <input type="checkbox" name="reuse_translation" checked>
+              <i aria-hidden="true"></i>
+            </label>
+            <label class="toggle-row">
+              <span>
+                <strong>Low original bed</strong>
+                <small>Mix the source at 10% beneath synthesized speech.</small>
+              </span>
+              <input type="checkbox" name="keep_original_audio">
+              <i aria-hidden="true"></i>
+            </label>
+            <div class="field-group compact">
+              <label for="intro-offset">Intro boundary</label>
+              <div class="unit-field">
+                <input id="intro-offset" name="intro_offset" type="number" min="0" max="600" step="0.1" placeholder="Auto-detect">
+                <span>seconds</span>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <button class="primary-action" id="run-button" type="submit">
+          <span>Start processing</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M14 7l5 5-5 5"></path></svg>
+        </button>
+        <button class="sample-action" id="sample-run" type="button">
+          <span>Explore completed sample</span>
+          <small>No API calls</small>
+        </button>
+        <p class="submit-error" id="submit-error" role="alert"></p>
+      </form>
+
+      <section class="history-block" aria-labelledby="history-title">
+        <div class="section-cap">
+          <h2 id="history-title">Recent runs</h2>
+          <span id="history-count">0</span>
+        </div>
+        <div class="history-list" id="history-list">
+          <p class="history-empty">Completed runs will remain here during this server session.</p>
+        </div>
+      </section>
+    </aside>
+
+    <section class="workspace" aria-label="Processing workspace">
+      <header class="run-header">
+        <div>
+          <span class="kicker" id="run-state-label">PIPELINE READY</span>
+          <h2 id="run-title">Every phase, in one view.</h2>
+          <p id="run-subtitle">Start a process to watch source media become a timed Hindi dub.</p>
+        </div>
+        <div class="live-metrics">
+          <div class="cost-meter" aria-label="Running API cost">
+            <span class="metric-label">RUNNING API COST</span>
+            <div class="cost-values">
+              <strong id="cost-usd">$0.0000</strong>
+              <span id="cost-inr">₹0.00</span>
+            </div>
+          </div>
+          <div class="run-meter" aria-label="Overall progress">
+            <div class="meter-value"><span id="progress-value">0</span><small>%</small></div>
+            <div class="meter-track"><i id="progress-bar"></i></div>
+            <div class="meter-meta">
+              <span id="phase-position">0 / 7 phases</span>
+              <span id="elapsed-time">00:00</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="pipeline-frame">
+        <div class="pipeline-caption">
+          <span>PROCESS MAP · SELECT A PHASE</span>
+          <span class="live-caption"><i aria-hidden="true"></i><span id="live-label">IDLE</span></span>
+        </div>
+        <ol class="phase-list" id="phase-list"></ol>
+      </div>
+
+      <section class="phase-inspector" id="phase-inspector" aria-labelledby="phase-inspector-title">
+        <header class="inspector-header">
+          <div>
+            <span class="inspector-eyebrow" id="phase-inspector-eyebrow">PHASE 01 · WAITING</span>
+            <h2 id="phase-inspector-title">Source media</h2>
+            <p id="phase-inspector-summary">Resolve the YouTube source, download the video, and extract a transcription-ready audio track.</p>
+          </div>
+          <button class="follow-button active" id="follow-phase" type="button" aria-pressed="true">
+            <i aria-hidden="true"></i>
+            Follow live
+          </button>
+        </header>
+        <div class="inspector-body">
+          <div class="phase-stat-region" aria-label="Selected phase statistics">
+            <div class="inspector-progress">
+              <span>Phase progress</span>
+              <strong id="inspector-progress-value">0%</strong>
+              <div><i id="inspector-progress-bar"></i></div>
+            </div>
+            <dl class="phase-stats" id="phase-stats"></dl>
+          </div>
+          <div class="phase-evidence" id="phase-evidence" aria-live="polite">
+            <div class="evidence-empty">
+              <span>LIVE EVIDENCE</span>
+              <p>Details will appear here as this phase reports work.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="lower-grid">
+        <section class="activity-panel" aria-labelledby="activity-title">
+          <div class="section-cap">
+            <h2 id="activity-title">Activity</h2>
+            <button class="text-button" id="clear-log" type="button">Clear view</button>
+          </div>
+          <div class="empty-state" id="activity-empty">
+            <span class="empty-index">01—07</span>
+            <h3>The pipeline is inspectable by design.</h3>
+            <p>Progress events, cache hits, timings, and actionable failures appear here without hiding the underlying stage.</p>
+          </div>
+          <ol class="event-log" id="event-log" hidden></ol>
+        </section>
+
+        <section class="output-panel" aria-labelledby="output-title">
+          <div class="section-cap">
+            <h2 id="output-title">Output</h2>
+            <span id="artifact-count">No files</span>
+          </div>
+          <div class="output-empty" id="output-empty">
+            <div class="output-glyph" aria-hidden="true">
+              <svg viewBox="0 0 48 48"><path d="M8 14h32v24H8zM15 8h18v6M19 21l11 5.5L19 32z"></path></svg>
+            </div>
+            <p>The dubbed video, SRT, and both transcripts will collect here.</p>
+          </div>
+          <div class="output-content" id="output-content" hidden>
+            <video id="result-video" controls preload="metadata"></video>
+            <div class="artifact-list" id="artifact-list"></div>
+            <dl class="result-stats" id="result-stats"></dl>
+          </div>
+        </section>
+      </div>
+
+      <section class="transcript-panel" id="transcript-panel" hidden aria-labelledby="transcript-title">
+        <div class="section-cap transcript-cap">
+          <div>
+            <span class="kicker">ALIGNED TEXT</span>
+            <h2 id="transcript-title">Transcript comparison</h2>
+          </div>
+          <div class="tab-switch" role="tablist" aria-label="Transcript language">
+            <button class="active" data-language="english" role="tab" aria-selected="true">English</button>
+            <button data-language="hindi" role="tab" aria-selected="false">Hindi</button>
+          </div>
+        </div>
+        <div class="transcript-lines" id="transcript-lines"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

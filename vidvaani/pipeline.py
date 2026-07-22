@@ -4,7 +4,7 @@ import json
 import time
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Callable, Literal
 
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
@@ -16,7 +16,12 @@ from .downloader import download_video, DownloadResult
 from .transcriber import transcribe, Transcript, group_segments_by_duration
 from .translator import translate_segments, TranslatedSegment
 from .tts import synthesize_batch_parallel, TTSJob
-from .video import create_hindi_video, AssemblyResult, detect_intro_offset
+from .video import (
+    create_hindi_video,
+    AssemblyResult,
+    detect_intro_offset,
+    get_video_dimensions,
+)
 from .costs import CostTracker
 
 
@@ -61,6 +66,34 @@ def generate_srt(segments: list, output_path: Path, language: str = "hi") -> Pat
 console = Console()
 
 
+PipelineEventCallback = Callable[[dict[str, Any]], None]
+
+
+def _emit_pipeline_event(
+    callback: PipelineEventCallback | None,
+    phase: str,
+    status: str,
+    progress: float,
+    message: str,
+    **details: Any,
+) -> None:
+    """Publish a best-effort progress event without coupling the pipeline to a UI."""
+    if callback is None:
+        return
+    try:
+        callback({
+            "phase": phase,
+            "status": status,
+            "progress": max(0.0, min(1.0, progress)),
+            "message": message,
+            "timestamp": time.time(),
+            "details": details,
+        })
+    except Exception:
+        # Observability must never be allowed to stop a processing run.
+        pass
+
+
 @dataclass
 class PipelineResult:
     input_url: str
@@ -79,7 +112,7 @@ def run_pipeline(
     url: str,
     output_dir: Path,
     voice: str = "Kore",
-    tts_backend: Literal["gemini", "edge"] = "gemini",
+    tts_backend: Literal["gemini", "sarvam", "edge"] = "gemini",
     keep_original_audio: bool = False,
     original_volume: float = 0.1,
     save_intermediate: bool = True,
@@ -91,6 +124,7 @@ def run_pipeline(
     reuse_translation: bool = True,
     preserve_non_speech: bool = True,
     intro_offset: float | None = None,
+    event_callback: PipelineEventCallback | None = None,
 ) -> PipelineResult:
     """Run the complete YouTube to Hindi dubbing pipeline.
 
@@ -110,6 +144,7 @@ def run_pipeline(
         reuse_translation: Reuse existing translation if available
         preserve_non_speech: Keep original audio during non-speech (intro/outro/pauses)
         intro_offset: Seconds to skip at start (None = auto-detect intro music)
+        event_callback: Optional callback receiving structured phase updates
 
     Returns:
         PipelineResult with paths to output files
@@ -123,6 +158,18 @@ def run_pipeline(
     # Timing tracker
     timings = {}
     pipeline_start = time.time()
+
+    _emit_pipeline_event(
+        event_callback,
+        "pipeline",
+        "running",
+        0.0,
+        "Pipeline initialized",
+        url=url,
+        voice=voice,
+        tts_backend=tts_backend,
+        costs=CostTracker.get().summary(),
+    )
 
     console.print(Panel.fit(f"[bold blue]YouTube → Hindi Dubbing[/bold blue]\n{url}", border_style="blue"))
 
@@ -138,26 +185,61 @@ def run_pipeline(
 
         # Step 1: Download video
         step_start = time.time()
+        _emit_pipeline_event(
+            event_callback, "download", "running", 0.0,
+            "Resolving source and downloading media"
+        )
         download_task = progress.add_task("[cyan]Downloading video...", total=100)
+        last_download_progress = -1
 
         def download_progress(d):
+            nonlocal last_download_progress
             if d['status'] == 'downloading':
                 total = d.get('total_bytes') or d.get('total_bytes_estimate', 0)
                 downloaded = d.get('downloaded_bytes', 0)
                 if total > 0:
-                    progress.update(download_task, completed=int(downloaded / total * 100))
+                    percent = int(downloaded / total * 100)
+                    progress.update(download_task, completed=percent)
+                    if percent >= last_download_progress + 2:
+                        last_download_progress = percent
+                        _emit_pipeline_event(
+                            event_callback, "download", "running", percent / 100,
+                            f"Downloading source media — {percent}%",
+                            bytes_downloaded=downloaded,
+                            bytes_total=total,
+                        )
 
         download_result = download_video(url, output_dir, progress_hook=download_progress)
+        source_width, source_height = get_video_dimensions(download_result.video_path)
         progress.update(download_task, completed=100, description=f"[green]Downloaded: {download_result.title[:40]}...")
         timings['download'] = time.time() - step_start
+        _emit_pipeline_event(
+            event_callback, "download", "complete", 1.0,
+            f"Downloaded {download_result.title}",
+            title=download_result.title,
+            duration=download_result.duration,
+            width=source_width,
+            height=source_height,
+            duration_seconds=timings['download'],
+        )
 
         # Auto-detect intro offset if not specified
         step_start = time.time()
+        _emit_pipeline_event(
+            event_callback, "analyze", "running", 0.1,
+            "Scanning the opening audio and speech boundary"
+        )
         if intro_offset is None:
             intro_offset = detect_intro_offset(download_result.video_path)
             if intro_offset > 0:
                 console.print(f"[yellow]Auto-detected intro: {intro_offset:.1f}s[/yellow]")
         timings['intro_detect'] = time.time() - step_start
+        _emit_pipeline_event(
+            event_callback, "analyze", "complete", 1.0,
+            "Opening audio analysis complete",
+            intro_offset=intro_offset,
+            duration_seconds=timings['intro_detect'],
+        )
 
         # Check for existing translation to reuse
         translation_path = output_dir / f"{download_result.video_path.stem}_transcript_hi.json"
@@ -180,10 +262,41 @@ def run_pipeline(
             console.print(f"[yellow]Reusing existing translation: {len(translated)} segments[/yellow]")
             timings['transcribe'] = 0.0
             timings['translate'] = 0.0
+            _emit_pipeline_event(
+                event_callback, "transcribe", "cached", 1.0,
+                f"Reused {len(translated)} cached transcript segments",
+                segments=len(translated),
+                duration_seconds=0.0,
+                preview=[
+                    {"start": s.start, "end": s.end, "text": s.original}
+                    for s in translated[:8]
+                ],
+            )
+            _emit_pipeline_event(
+                event_callback, "translate", "cached", 1.0,
+                f"Reused {len(translated)} cached Hindi segments",
+                segments=len(translated),
+                duration_seconds=0.0,
+                preview=[
+                    {
+                        "start": s.start,
+                        "end": s.end,
+                        "original": s.original,
+                        "translated": s.translated,
+                    }
+                    for s in translated[:8]
+                ],
+            )
         else:
             # Step 2: Transcribe audio with real progress
             step_start = time.time()
             audio_duration = download_result.duration
+            _emit_pipeline_event(
+                event_callback, "transcribe", "running", 0.0,
+                "Transcribing English speech locally",
+                audio_duration=audio_duration,
+                model=whisper_model,
+            )
             transcribe_task = progress.add_task(
                 f"[cyan]Transcribing {audio_duration:.0f}s audio...",
                 total=int(audio_duration) if audio_duration > 0 else 100
@@ -192,6 +305,13 @@ def run_pipeline(
             def transcribe_progress(current: int, total: int):
                 progress.update(transcribe_task, completed=current, total=total,
                               description=f"[cyan]Transcribing: {current}s / {total}s")
+                _emit_pipeline_event(
+                    event_callback, "transcribe", "running",
+                    current / total if total else 0.0,
+                    f"Transcribed {current}s of {total}s",
+                    seconds_complete=current,
+                    seconds_total=total,
+                )
 
             transcript = transcribe(download_result.audio_path, model=whisper_model, progress_callback=transcribe_progress)
             grouped_segments = group_segments_by_duration(transcript.segments, max_segment_duration)
@@ -206,6 +326,17 @@ def run_pipeline(
                 progress.update(transcribe_task, completed=100, total=100,
                                description=f"[green]Transcribed: {len(grouped_segments)} segments")
             timings['transcribe'] = time.time() - step_start
+            _emit_pipeline_event(
+                event_callback, "transcribe", "complete", 1.0,
+                f"Created {len(grouped_segments)} timestamped English segments",
+                segments=len(grouped_segments),
+                source_language=transcript.language,
+                duration_seconds=timings['transcribe'],
+                preview=[
+                    {"start": s.start, "end": s.end, "text": s.text}
+                    for s in grouped_segments[:8]
+                ],
+            )
 
             # Save English transcript
             if save_intermediate:
@@ -221,16 +352,65 @@ def run_pipeline(
 
             # Step 3: Translate to Hindi
             step_start = time.time()
+            _emit_pipeline_event(
+                event_callback, "translate", "running", 0.05,
+                "Translating while preserving technical vocabulary",
+                segments=len(grouped_segments),
+                model=translation_model,
+            )
             translate_task = progress.add_task("[cyan]Translating to Hindi...", total=None)
+            live_translations: list[dict[str, Any]] = []
+
+            def translate_progress(
+                batch: list[TranslatedSegment], completed: int, total: int
+            ) -> None:
+                live_translations.extend([
+                    {
+                        "start": s.start,
+                        "end": s.end,
+                        "original": s.original,
+                        "translated": s.translated,
+                    }
+                    for s in batch
+                ])
+                _emit_pipeline_event(
+                    event_callback,
+                    "translate",
+                    "running",
+                    completed / total if total else 1.0,
+                    f"Translated {completed} of {total} segments",
+                    segments_complete=completed,
+                    segments_total=total,
+                    preview=live_translations[-8:],
+                    costs=CostTracker.get().summary(),
+                )
+
             translated = translate_segments(
                 grouped_segments,
                 source_lang="English",
                 target_lang="Hindi",
-                model=translation_model
+                model=translation_model,
+                progress_callback=translate_progress,
             )
             progress.update(translate_task, completed=100, total=100,
                            description=f"[green]Translated: {len(translated)} segments")
             timings['translate'] = time.time() - step_start
+            _emit_pipeline_event(
+                event_callback, "translate", "complete", 1.0,
+                f"Translated {len(translated)} segments to Hindi",
+                segments=len(translated),
+                duration_seconds=timings['translate'],
+                preview=[
+                    {
+                        "start": s.start,
+                        "end": s.end,
+                        "original": s.original,
+                        "translated": s.translated,
+                    }
+                    for s in translated[:12]
+                ],
+                costs=CostTracker.get().summary(),
+            )
 
             # Save Hindi transcript
             if save_intermediate:
@@ -302,6 +482,17 @@ def run_pipeline(
 
         # Step 4: Generate Hindi TTS in parallel
         step_start = time.time()
+        _emit_pipeline_event(
+            event_callback, "synthesize", "running", 0.0,
+            f"Generating Hindi speech with {voice}",
+            voice=voice,
+            backend=tts_backend,
+            segments=len(translated),
+            preview=[
+                {"start": s.start, "end": s.end, "text": s.translated}
+                for s in translated[:8]
+            ],
+        )
         tts_task = progress.add_task(
             f"[cyan]Generating Hindi speech ({voice}, {tts_workers} workers)...",
             total=len(translated)
@@ -348,6 +539,14 @@ def run_pipeline(
         def tts_progress(completed: int, total: int):
             progress.update(tts_task, completed=completed,
                           description=f"[cyan]TTS: {completed}/{total} segments (parallel)")
+            _emit_pipeline_event(
+                event_callback, "synthesize", "running",
+                completed / total if total else 1.0,
+                f"Generated {completed} of {total} speech segments",
+                segments_complete=completed,
+                segments_total=total,
+                costs=CostTracker.get().summary(),
+            )
 
         # Run TTS in parallel for remaining jobs
         if jobs:
@@ -377,11 +576,30 @@ def run_pipeline(
         progress.update(tts_task, completed=len(translated),
                        description=f"[green]Generated: {len(audio_segments)} audio segments")
         timings['tts'] = time.time() - step_start
+        _emit_pipeline_event(
+            event_callback, "synthesize", "complete", 1.0,
+            f"Prepared {len(audio_segments)} timed speech clips",
+            segments=len(audio_segments),
+            cached_segments=cached_count,
+            skipped_segments=skipped_short,
+            duration_seconds=timings['tts'],
+            costs=CostTracker.get().summary(),
+        )
 
         # Step 5: Assemble final video
         step_start = time.time()
+        _emit_pipeline_event(
+            event_callback, "assemble", "running", 0.15,
+            "Aligning speech, preserving pauses, and mixing the final track",
+            preserve_non_speech=preserve_non_speech,
+            keep_original_audio=keep_original_audio,
+        )
         assemble_task = progress.add_task("[cyan]Assembling Hindi video...", total=None)
         output_video = output_dir / f"{download_result.video_path.stem}_hindi_{voice.lower()}.mp4"
+
+        demo_output_duration = None
+        if max_segments > 0 and audio_segments:
+            demo_output_duration = max(end for _, _, end in audio_segments)
 
         assembly_result = create_hindi_video(
             download_result.video_path,
@@ -389,11 +607,25 @@ def run_pipeline(
             output_video,
             keep_original=keep_original_audio,
             original_volume=original_volume,
-            preserve_non_speech=preserve_non_speech
+            preserve_non_speech=preserve_non_speech,
+            output_duration=demo_output_duration,
         )
+        output_width, output_height = get_video_dimensions(output_video)
         progress.update(assemble_task, completed=100, total=100,
                        description=f"[green]Created: {output_video.name}")
         timings['assemble'] = time.time() - step_start
+        _emit_pipeline_event(
+            event_callback, "assemble", "complete", 1.0,
+            f"Created {output_video.name}",
+            duration=assembly_result.duration,
+            source_duration=download_result.duration,
+            output_name=output_video.name,
+            segments_used=assembly_result.segments_used,
+            width=output_width,
+            height=output_height,
+            demo_trimmed=demo_output_duration is not None,
+            duration_seconds=timings['assemble'],
+        )
 
     # Cleanup intermediate audio file
     download_result.audio_path.unlink(missing_ok=True)
@@ -403,6 +635,15 @@ def run_pipeline(
 
     # Get costs
     costs = CostTracker.get().summary()
+
+    _emit_pipeline_event(
+        event_callback, "pipeline", "complete", 1.0,
+        "Pipeline complete",
+        duration=assembly_result.duration,
+        segments=len(audio_segments),
+        timings=timings,
+        costs=costs,
+    )
 
     # Print summary
     console.print()

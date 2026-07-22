@@ -6,32 +6,32 @@
     <title>VidVaani — Hindi dubbing for any lecture, in minutes</title>
     <meta name="description" content="VidVaani dubs English lecture videos into natural Hindi — open source, ₹10 per lecture, technical terms preserved.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #faf9f7;
-            --bg-2: #ffffff;
-            --bg-3: #f1efe9;
-            --ink: #1f2328;
-            --ink-2: #57606a;
-            --ink-3: #8b949e;
-            --line: #e3e1da;
-            --navy: #1a3a5c;
-            --blue: #2a78d6;
-            --blue-dark: #1c5cab;
-            --blue-soft: #eaf2fc;
+            --bg: #f2f0e9;
+            --bg-2: #fffefa;
+            --bg-3: #e9e6dd;
+            --ink: #17201d;
+            --ink-2: #53605b;
+            --ink-3: #87908c;
+            --line: #d7d4ca;
+            --navy: #17201d;
+            --blue: #b95f38;
+            --blue-dark: #884226;
+            --blue-soft: #f1ddd2;
             --gold: #b58900;
             --serif: 'Source Serif 4', Georgia, serif;
-            --sans: 'Inter', -apple-system, sans-serif;
+            --sans: 'Manrope', 'Avenir Next', sans-serif;
         }
 
         html { scroll-behavior: smooth; }
 
         body {
             font-family: var(--sans);
-            background: var(--bg);
+            background: radial-gradient(circle at 84% -10%, rgba(185,95,56,.09), transparent 34rem), var(--bg);
             color: var(--ink);
             line-height: 1.65;
         }
@@ -98,6 +98,20 @@
             font-size: clamp(1.02rem, 2vw, 1.2rem); color: var(--ink-2);
             max-width: 640px; margin: 0 auto 8px;
         }
+        .hero-actions {
+            display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+            margin: 24px auto 0;
+        }
+        .hero-action {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-height: 44px; padding: 0 18px; border-radius: 10px;
+            color: #fff; background: var(--blue-dark); border: 1px solid var(--blue-dark);
+            text-decoration: none; font-size: .88rem; font-weight: 700;
+            transition: transform .2s, background .2s, border-color .2s;
+        }
+        .hero-action:hover { transform: translateY(-1px); background: #73371f; }
+        .hero-action.secondary { color: var(--ink); background: rgba(255,254,250,.65); border-color: var(--line); }
+        .hero-action.secondary:hover { background: var(--bg-2); border-color: #bcb9ae; }
 
         /* ── A/B PLAYER ── */
         .player-card {
@@ -225,6 +239,46 @@
             padding: 1px 6px; border-radius: 5px; color: var(--navy);
         }
 
+        /* ── PROCESS CONTROL PREVIEW ── */
+        .control-showcase {
+            display: grid; grid-template-columns: minmax(230px,.72fr) minmax(0,1.28fr);
+            margin-top: 34px; overflow: hidden;
+            border: 1px solid var(--line); border-radius: 18px;
+            background: rgba(255,254,250,.7);
+            box-shadow: 0 24px 60px -44px rgba(41,38,30,.45);
+        }
+        .control-phase-list { padding: 12px 0; border-right: 1px solid var(--line); }
+        .control-phase {
+            display: grid; grid-template-columns: 32px minmax(0,1fr) auto; gap: 11px;
+            align-items: center; width: 100%; min-height: 54px; padding: 0 16px;
+            color: var(--ink-2); border: 0; border-left: 3px solid transparent;
+            background: transparent; text-align: left; cursor: pointer;
+            transition: color .2s, background .2s, border-color .2s;
+        }
+        .control-phase:hover { color: var(--ink); background: rgba(242,240,233,.65); }
+        .control-phase.active { color: var(--blue-dark); border-left-color: var(--blue); background: var(--blue-soft); }
+        .control-phase span:first-child { color: var(--ink-3); font: 600 .66rem ui-monospace, monospace; }
+        .control-phase strong { font-size: .76rem; }
+        .control-phase i { width: 8px; height: 8px; border-radius: 50%; background: #3e755c; box-shadow: 0 0 0 3px rgba(62,117,92,.1); }
+        .control-detail { min-height: 430px; padding: 30px 34px 34px; }
+        .control-kicker { color: var(--blue-dark); font: 700 .65rem ui-monospace, monospace; letter-spacing: .08em; }
+        .control-detail h3 { margin: 9px 0 7px; color: var(--ink); font-family: var(--serif); font-size: 1.65rem; line-height: 1.15; }
+        .control-detail > p { max-width: 62ch; color: var(--ink-2); font-size: .88rem; }
+        .control-stats { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1px; margin-top: 24px; background: var(--line); border: 1px solid var(--line); }
+        .control-stat { min-width: 0; padding: 14px; background: var(--bg-2); }
+        .control-stat span { display: block; color: var(--ink-3); font: 650 .62rem ui-monospace, monospace; text-transform: uppercase; }
+        .control-stat strong { display: block; margin-top: 7px; overflow: hidden; font: 650 .78rem ui-monospace, monospace; text-overflow: ellipsis; white-space: nowrap; }
+        .control-evidence { margin-top: 22px; border-top: 1px solid var(--line); }
+        .control-translation { display: grid; grid-template-columns: 78px 1fr 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+        .control-translation time { color: var(--ink-3); font: .64rem ui-monospace, monospace; }
+        .control-copy span { display: block; margin-bottom: 5px; color: var(--ink-3); font: 700 .58rem ui-monospace, monospace; letter-spacing: .06em; }
+        .control-copy p { margin: 0; color: var(--ink-2); font-size: .78rem; line-height: 1.5; }
+        .control-copy.hindi p { color: var(--ink); font-size: .82rem; }
+        .control-note { margin-top: 18px; padding: 14px 16px; border-left: 2px solid var(--blue); background: var(--bg-3); color: var(--ink-2); font-size: .78rem; line-height: 1.55; }
+        .control-cta { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 18px; }
+        .control-cta code { padding: 7px 10px; border-radius: 7px; color: var(--ink); background: var(--bg-3); font: .72rem ui-monospace, monospace; }
+        .control-cta a { color: var(--blue-dark); font-size: .8rem; font-weight: 700; text-decoration: none; }
+
         /* ── TABLES ── */
         .table-wrap {
             margin-top: 30px; border: 1px solid var(--line);
@@ -290,8 +344,20 @@
 
         @media (max-width: 860px) {
             .compare-grid { grid-template-columns: 1fr; }
+            .control-showcase { grid-template-columns: 1fr; }
+            .control-phase-list { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+            .control-phase { grid-template-columns: 26px minmax(0,1fr); min-width: 145px; border-left: 0; border-bottom: 3px solid transparent; }
+            .control-phase.active { border-bottom-color: var(--blue); }
+            .control-phase i { display: none; }
             .nav-links a:not(.nav-cta) { display: none; }
             section { padding: 52px 0; }
+        }
+        @media (max-width: 620px) {
+            .control-detail { padding: 24px 20px 26px; }
+            .control-stats { grid-template-columns: 1fr; }
+            .control-translation { grid-template-columns: 58px minmax(0,1fr); }
+            .control-copy.hindi { grid-column: 2; }
+            .control-cta { align-items: flex-start; flex-direction: column; }
         }
     </style>
 </head>
@@ -304,6 +370,7 @@
             <a href="#voices">Voices</a>
             <a href="#lecture">Full lecture</a>
             <a href="#how">How it works</a>
+            <a href="#control">Control room</a>
             <a href="#cost">Cost</a>
             <a href="#faq">FAQ</a>
             <a href="slides/vidvaani.html" target="_blank">Slides</a>
@@ -319,6 +386,10 @@
             VidVaani transcribes, translates, and re-voices lecture videos with native Indian
             voices — for about <strong>₹10 per lecture</strong>, keeping technical terms in English.
         </p>
+        <div class="hero-actions">
+            <a class="hero-action" href="#voices">Hear the difference</a>
+            <a class="hero-action secondary" href="#control">Inspect every phase</a>
+        </div>
 
         <div class="player-card">
             <p class="player-hint"><strong>Try it:</strong> press play, then flip the language — the video keeps going from the same moment.</p>
@@ -530,6 +601,45 @@
             </div>
         </section>
 
+        <!-- ── PROCESS CONTROL ───────────────────────────── -->
+        <section id="control">
+            <div class="wrap">
+                <div class="eyebrow">Nothing hidden</div>
+                <h2>Click a phase. See what the pipeline actually did.</h2>
+                <p class="sub">
+                    The local control room exposes progress, elapsed time, media duration and resolution,
+                    API usage, aligned English/Hindi text, generated clips, and final artifacts while a run is active.
+                    This preview uses measurements from the 58-second GeoGebra demonstration.
+                </p>
+
+                <div class="control-showcase">
+                    <div class="control-phase-list" role="tablist" aria-label="Processing phase preview">
+                        <button class="control-phase" type="button" data-public-phase="download"><span>01</span><strong>Source media</strong><i></i></button>
+                        <button class="control-phase" type="button" data-public-phase="analyze"><span>02</span><strong>Intro analysis</strong><i></i></button>
+                        <button class="control-phase" type="button" data-public-phase="transcribe"><span>03</span><strong>Speech to text</strong><i></i></button>
+                        <button class="control-phase active" type="button" data-public-phase="translate"><span>04</span><strong>Hindi translation</strong><i></i></button>
+                        <button class="control-phase" type="button" data-public-phase="synthesize"><span>05</span><strong>Voice synthesis</strong><i></i></button>
+                        <button class="control-phase" type="button" data-public-phase="assemble"><span>06</span><strong>Timing &amp; mix</strong><i></i></button>
+                        <button class="control-phase" type="button" data-public-phase="deliver"><span>07</span><strong>Deliverables</strong><i></i></button>
+                    </div>
+                    <article class="control-detail" aria-live="polite">
+                        <span class="control-kicker" id="public-phase-kicker">PHASE 04 · COMPLETE</span>
+                        <h3 id="public-phase-title">Hindi translation</h3>
+                        <p id="public-phase-description">Timed English segments become conversational Hindi without sacrificing the technical vocabulary students already use.</p>
+                        <div class="control-stats" id="public-phase-stats"></div>
+                        <div class="control-evidence" id="public-phase-evidence"></div>
+                        <div class="control-cta">
+                            <code>uv run --frozen vidvaani-web</code>
+                            <a href="#quickstart">Run the control room locally →</a>
+                        </div>
+                    </article>
+                </div>
+                <div class="control-note">
+                    <strong>Demo runs have a real boundary:</strong> choosing five segments produces a video that ends after the fifth processed segment. It no longer appends the untranslated English remainder. Full video means full video.
+                </div>
+            </div>
+        </section>
+
         <!-- ── COST ──────────────────────────────────────── -->
         <section id="cost">
             <div class="wrap">
@@ -571,7 +681,7 @@
                         </thead>
                         <tbody>
                             <tr class="hl"><td>VidVaani (this project)</td><td>₹80–110</td><td>Yes — open source, every stage editable</td></tr>
-                            <tr><td>YouTube auto-dubbing</td><td>Free</td><td>No — channel owner only, dub not editable, no voice choice</td></tr>
+                            <tr><td>YouTube auto-dubbing</td><td>Free</td><td>Eligibility is determined by YouTube; dubs are not editable, with no direct voice or terminology control</td></tr>
                             <tr><td>Sarvam Studio</td><td>≈ ₹200–400</td><td>Partly — formal Hindi only, no per-segment control</td></tr>
                             <tr><td>Azure Video Translation</td><td>≈ ₹2,000</td><td>Partly — limited voices</td></tr>
                             <tr><td>ElevenLabs / Dubverse / Rask</td><td>≈ ₹3,000–11,000</td><td>Studio editing on paid tiers; per-language billing</td></tr>
@@ -611,7 +721,10 @@ cd vidvaani &amp;&amp; uv sync
 <span class="c-cmd">uv run vidvaani</span> dub <span class="c-str">"https://youtube.com/watch?v=VIDEO_ID"</span>
 
 <span class="c-comment"># full lecture, native Indian voice, plus subtitles</span>
-<span class="c-cmd">uv run vidvaani</span> dub <span class="c-str">"https://youtube.com/watch?v=VIDEO_ID"</span> <span class="c-flag">--full</span> <span class="c-flag">-b</span> sarvam <span class="c-flag">-v</span> abhilash</div>
+<span class="c-cmd">uv run vidvaani</span> dub <span class="c-str">"https://youtube.com/watch?v=VIDEO_ID"</span> <span class="c-flag">--full</span> <span class="c-flag">-b</span> sarvam <span class="c-flag">-v</span> abhilash
+
+<span class="c-comment"># professional browser control room with live phase inspection</span>
+<span class="c-cmd">uv run --frozen vidvaani-web</span></div>
                 </div>
             </div>
         </section>
@@ -625,7 +738,7 @@ cd vidvaani &amp;&amp; uv sync
                 <div class="faq-grid">
                     <div class="faq-card">
                         <h3>Doesn't YouTube dub videos automatically now?</h3>
-                        <p>Yes — auto-dubbing rolled out to all channels in 2026. But <strong>only the channel owner</strong> can enable it: a university cannot dub NPTEL or MIT lectures it doesn't own. The dubs can't be edited (a mistranslated term can only be unpublished), there's no voice choice, and its robotic Hindi has drawn wide criticism.</p>
+                        <p>YouTube decides which eligible creators receive access, and rollout is gradual. <strong>Nipun's established lecture channel is still not enabled</strong>, despite its substantial catalogue. When access is available, generated dubs cannot be edited, and there is no direct control over voice or technical terminology. VidVaani can process a permitted source without waiting for channel eligibility.</p>
                     </div>
                     <div class="faq-card">
                         <h3>Why not just use Sarvam's own dubbing product?</h3>
@@ -669,6 +782,109 @@ cd vidvaani &amp;&amp; uv sync
     </footer>
 
     <script>
+        const PUBLIC_PHASES = {
+            download: {
+                number: '01', title: 'Source media',
+                description: 'yt-dlp resolves the lecture and selects the best available stream up to 1080p before extracting local transcription audio.',
+                stats: [['Source', '10:24'], ['Selected excerpt', '00:58'], ['Resolution', '1864 × 1080']],
+                note: 'The final MP4 stream-copies the source video track, so the dubbing pipeline does not lower its resolution.'
+            },
+            analyze: {
+                number: '02', title: 'Intro analysis',
+                description: 'ffmpeg scans the opening waveform for a stable speech boundary so music and pre-roll can remain untouched.',
+                stats: [['Speech begins', '0.0 s'], ['Scan window', '60 s'], ['Result', 'No intro']],
+                note: 'If an intro is detected, original audio plays until the exact speech boundary; subtitles and Hindi speech begin after it.'
+            },
+            transcribe: {
+                number: '03', title: 'Speech to text',
+                description: 'MLX Whisper runs on the Mac and emits timestamped English segments without sending source audio to a transcription API.',
+                stats: [['Audio scanned', '00:58'], ['Segments', '5'], ['Language', 'English']],
+                note: 'The local transcript is saved as aligned JSON and becomes the stable source for translation, subtitles, and later voice changes.'
+            },
+            translate: {
+                number: '04', title: 'Hindi translation',
+                description: 'Timed English segments become conversational Hindi without sacrificing the technical vocabulary students already use.',
+                stats: [['Segments', '5 / 5'], ['Time', '17.0 s'], ['Cost', '$0.002289']],
+                translations: [
+                    ['00:00–00:14', 'Today I want to show the usage of a tool called GeoGebra.', 'आज मैं जिओजेब्रा नामक एक टूल का उपयोग दिखाना चाहता हूँ।'],
+                    ['00:14–00:28', 'We are given this uniform joint PDF in two dimensions.', 'हमें दो आयामों में यह यूनिफॉर्म जॉइंट पीडीएफ दिया गया है।']
+                ]
+            },
+            synthesize: {
+                number: '05', title: 'Voice synthesis',
+                description: 'The selected voice generates one Hindi clip per segment; clips are cached, loudness-matched, and fitted to their speaking windows.',
+                stats: [['Speech clips', '5 / 5'], ['Voice', 'Charon'], ['Cost', '$0.012203']],
+                note: 'Changing the voice reuses the translation. The control room also shows API calls, characters or tokens, cache hits, and skipped fragments.'
+            },
+            assemble: {
+                number: '06', title: 'Timing & mix',
+                description: 'ffmpeg places each Hindi clip on the original timeline, preserves natural pauses, and copies the source video stream into the result.',
+                stats: [['Output', '00:58'], ['Resolution', '1864 × 1080'], ['Boundary', 'Segment 5']],
+                note: 'A five-segment demo now ends after segment five. It does not continue with an untranslated English tail; full-video mode keeps the complete timeline.'
+            },
+            deliver: {
+                number: '07', title: 'Deliverables',
+                description: 'The run finishes with inspectable, reusable artifacts rather than a single opaque video file.',
+                stats: [['Files', '4'], ['Video', 'MP4'], ['Text', 'SRT + 2 JSON']],
+                note: 'Download the dubbed MP4, Hindi subtitles, English transcript, and aligned Hindi translation. Final timings and USD/INR costs remain attached to the run.'
+            }
+        };
+
+        function renderPublicPhase(id) {
+            const phase = PUBLIC_PHASES[id];
+            if (!phase) return;
+            document.querySelectorAll('[data-public-phase]').forEach(button => {
+                const active = button.dataset.publicPhase === id;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-selected', String(active));
+            });
+            document.getElementById('public-phase-kicker').textContent = `PHASE ${phase.number} · COMPLETE`;
+            document.getElementById('public-phase-title').textContent = phase.title;
+            document.getElementById('public-phase-description').textContent = phase.description;
+
+            const stats = document.getElementById('public-phase-stats');
+            stats.replaceChildren();
+            phase.stats.forEach(([label, value]) => {
+                const item = document.createElement('div');
+                item.className = 'control-stat';
+                const term = document.createElement('span');
+                term.textContent = label;
+                const result = document.createElement('strong');
+                result.textContent = value;
+                item.append(term, result);
+                stats.append(item);
+            });
+
+            const evidence = document.getElementById('public-phase-evidence');
+            evidence.replaceChildren();
+            if (phase.translations) {
+                phase.translations.forEach(([timing, english, hindi]) => {
+                    const row = document.createElement('div');
+                    row.className = 'control-translation';
+                    const time = document.createElement('time');
+                    time.textContent = timing;
+                    const en = document.createElement('div');
+                    en.className = 'control-copy';
+                    en.innerHTML = `<span>ENGLISH</span><p>${english}</p>`;
+                    const hi = document.createElement('div');
+                    hi.className = 'control-copy hindi';
+                    hi.innerHTML = `<span>HINDI</span><p lang="hi">${hindi}</p>`;
+                    row.append(time, en, hi);
+                    evidence.append(row);
+                });
+            } else {
+                const note = document.createElement('div');
+                note.className = 'control-note';
+                note.textContent = phase.note;
+                evidence.append(note);
+            }
+        }
+
+        document.querySelectorAll('[data-public-phase]').forEach(button => {
+            button.addEventListener('click', () => renderPublicPhase(button.dataset.publicPhase));
+        });
+        renderPublicPhase('translate');
+
         const heroVideo = document.getElementById('hero-video');
         const SRC = {
             en: 'demo_videos/mini_demo/english_original.mp4',

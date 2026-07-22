@@ -59,6 +59,22 @@ uv run vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID" --full -b sarvam 
 uv run vidvaani dub "https://www.youtube.com/watch?v=VIDEO_ID" --full --title-folder
 ```
 
+## Processing Control Room
+
+VidVaani includes a purpose-built browser app for running and inspecting the
+pipeline. It shows live state, progress, timings, cache hits, and failures for
+source download, intro analysis, transcription, translation, voice synthesis,
+timing/mix, and final deliverables.
+
+```bash
+uv run --frozen vidvaani-web
+```
+
+Open <http://127.0.0.1:7860>. Runs execute one at a time so local ML and video
+assembly do not compete for resources; additional requests remain queued. The
+finished MP4, SRT, and both transcript files can be previewed or downloaded from
+the app.
+
 ## Usage
 
 ### Dub Command

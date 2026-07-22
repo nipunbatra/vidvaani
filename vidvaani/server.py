@@ -24,7 +24,7 @@ def dub_youtube_to_hindi(
     url: str,
     output_dir: str = "./output",
     voice: str = "Kore",
-    tts_backend: Literal["gemini", "edge"] = "gemini",
+    tts_backend: Literal["gemini", "sarvam", "edge"] = "gemini",
     keep_original_audio: bool = False,
     original_volume: float = 0.1
 ) -> dict:

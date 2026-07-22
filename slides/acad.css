@@ -1,212 +1,302 @@
 /* @theme acad */
-/* Clean academic theme: white ground, serif display, booktabs tables. */
+/* VidVaani warm editorial theme — shared with the control room and demo site. */
 
 @import 'default';
 
 :root {
-  --ink: #1f2328;
-  --ink-2: #57606a;
-  --ink-3: #8b949e;
-  --navy: #1a3a5c;
-  --navy-2: #2c5a8c;
-  --rule: #d0d7de;
-  --accent-bg: #f3f6fa;
+  --paper: #f2f0e9;
+  --paper-deep: #e9e6dd;
+  --surface: #fffefa;
+  --ink: #17201d;
+  --ink-soft: #53605b;
+  --ink-faint: #87908c;
+  --line: #d7d4ca;
+  --line-strong: #bcb9ae;
+  --accent: #b95f38;
+  --accent-dark: #884226;
+  --accent-soft: #f1ddd2;
+  --success: #3e755c;
+  --mono: 'SFMono-Regular', Menlo, Consolas, monospace;
+  --sans: 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+  --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
 }
 
 section {
   width: 1280px;
   height: 720px;
-  padding: 58px 78px 70px;
-  background: #ffffff;
+  padding: 62px 78px 66px;
   color: var(--ink);
-  font-family: 'Helvetica Neue', Helvetica, 'Inter', -apple-system, Arial, sans-serif;
-  font-size: 21.5px;
-  line-height: 1.5;
+  background:
+    radial-gradient(circle at 88% -18%, rgba(185,95,56,.10), transparent 360px),
+    var(--paper);
+  font-family: var(--sans);
+  font-size: 23px;
+  line-height: 1.42;
   display: flex;
   flex-direction: column;
-  place-content: flex-start !important;
   justify-content: flex-start !important;
   align-items: stretch;
 }
 
 section h1 {
-  font-family: Georgia, 'Times New Roman', serif;
+  max-width: 1020px;
+  margin: 0 0 22px;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 2em;
   font-weight: 700;
-  font-size: 1.58em;
-  color: var(--navy);
-  letter-spacing: -0.01em;
-  margin: 0 0 10px;
-  padding-bottom: 12px;
-  border-bottom: 1.5px solid var(--rule);
+  line-height: 1.03;
+  letter-spacing: -.045em;
+  text-wrap: balance;
+}
+
+section:not(.title) h1::after {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 4px;
+  margin-top: 17px;
+  border-radius: 4px;
+  background: var(--accent);
 }
 
 section h2 {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.12em;
-  font-weight: 700;
+  margin: 10px 0 7px;
   color: var(--ink);
-  margin: 20px 0 6px;
+  font-size: 1.05em;
+  line-height: 1.2;
+  letter-spacing: -.02em;
 }
 
 section h3 {
-  font-size: 0.94em;
-  font-weight: 600;
-  color: var(--ink-2);
+  margin: 8px 0 5px;
+  color: var(--accent-dark);
+  font: 700 .62em/1.2 var(--mono);
+  letter-spacing: .08em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 16px 0 4px;
 }
 
-section a { color: var(--navy-2); text-decoration: none; }
-
-section strong { color: var(--ink); font-weight: 700; }
+section p { margin: 7px 0; }
+section strong { color: var(--ink); font-weight: 720; }
 section em { color: inherit; }
+section a { color: var(--accent-dark); text-decoration: none; }
+
+section ul,
+section ol { margin: 7px 0; padding-left: 1.08em; }
+section li { margin: 7px 0; }
+section li::marker { color: var(--accent); }
 
 section code {
-  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
-  font-size: 0.82em;
-  background: var(--accent-bg);
-  border: 1px solid var(--rule);
-  border-radius: 3px;
-  padding: 1px 5px;
-  color: var(--navy);
+  padding: 2px 6px;
+  color: var(--accent-dark);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(255,254,250,.64);
+  font: .78em var(--mono);
 }
 
 section pre {
-  background: var(--accent-bg);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  padding: 16px 20px;
-  font-size: 0.78em;
-  line-height: 1.55;
-  margin: 12px 0;
+  margin: 10px 0;
+  padding: 16px 19px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,254,250,.68);
+  font: .72em/1.55 var(--mono);
 }
-section pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--ink);
-}
+section pre code { padding: 0; border: 0; background: transparent; color: var(--ink); }
 
-/* Booktabs-style tables: heavy top/bottom rule, light header rule, no verticals. */
 section table {
-  margin: 14px auto 6px;
-  border-collapse: collapse;
-  font-size: 0.86em;
-  line-height: 1.4;
-  border-top: 2px solid var(--ink);
-  border-bottom: 2px solid var(--ink);
+  width: 100%;
+  margin: 8px 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  background: rgba(255,254,250,.58);
+  font-size: .77em;
+  line-height: 1.35;
 }
 section table th {
-  border: none;
-  border-bottom: 1px solid var(--ink);
-  background: none;
-  color: var(--ink);
-  font-weight: 700;
+  padding: 9px 13px;
+  color: var(--ink-soft);
+  border: 0;
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--paper-deep);
+  font: 700 .78em var(--mono);
+  letter-spacing: .04em;
+  text-transform: uppercase;
   text-align: left;
-  padding: 7px 16px;
 }
 section table td {
-  border: none;
-  background: none;
-  padding: 6px 16px;
+  padding: 9px 13px;
   color: var(--ink);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  vertical-align: top;
 }
+section table tr:last-child td { border-bottom: 0; }
 section table tr:nth-child(even) td,
 section tbody tr:nth-child(2n),
-section tbody tr:nth-child(2n) td { background: transparent !important; }
-
-section ul, section ol { margin: 8px 0; padding-left: 1.15em; }
-section li { margin: 4px 0; }
-section li li { font-size: 0.94em; }
-
-section img { background: transparent; display: block; margin: 10px auto; }
+section tbody tr:nth-child(2n) td { background: rgba(233,230,221,.28) !important; }
 
 section blockquote {
-  border-left: 3px solid var(--navy);
-  background: var(--accent-bg);
-  color: var(--ink);
-  padding: 10px 18px;
   margin: 14px 0;
-  font-size: 0.94em;
-}
-section blockquote strong { color: var(--navy); }
-
-/* Small footnote/source line pinned to the bottom of the slide. */
-section .foot {
-  position: absolute;
-  bottom: 26px;
-  left: 78px;
-  right: 78px;
-  font-size: 0.62em;
-  color: var(--ink-3);
-  line-height: 1.4;
+  padding: 13px 18px;
+  color: var(--ink);
+  border: 0;
+  border-left: 3px solid var(--accent);
+  background: rgba(255,254,250,.55);
+  font-size: .94em;
 }
 
-/* Two-column layout. */
-section .cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 34px;
-  align-items: start;
-}
-
-/* Figure caption. */
-section .cap {
-  text-align: center;
-  font-size: 0.72em;
-  color: var(--ink-2);
-  margin-top: 2px;
-}
-
-section::after {
-  font-size: 0.62em;
-  color: var(--ink-3);
-  right: 40px;
-  bottom: 24px;
+section img {
+  display: block;
+  margin: 8px auto;
+  background: transparent;
 }
 
 section header {
-  font-size: 0.6em;
-  color: var(--ink-3);
-  left: 78px;
   top: 22px;
-  letter-spacing: 0.04em;
+  left: 78px;
+  color: var(--ink-faint);
+  font: 650 .52em/1 var(--mono);
+  letter-spacing: .09em;
 }
 
-/* Title slide. */
+section::after {
+  right: 38px;
+  bottom: 24px;
+  color: var(--ink-faint);
+  font: .54em var(--mono);
+}
+
+section .foot {
+  position: absolute;
+  right: 78px;
+  bottom: 24px;
+  left: 78px;
+  color: var(--ink-faint);
+  font-size: .52em;
+  line-height: 1.35;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.card {
+  min-height: 178px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255,254,250,.62);
+}
+.card h2 { margin-top: 0; }
+.card p { color: var(--ink-soft); font-size: .76em; line-height: 1.45; }
+.card .tag { color: var(--accent-dark); font: 700 .56em var(--mono); letter-spacing: .07em; }
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 14px 0;
+}
+
+.metric {
+  min-height: 138px;
+  padding: 19px 21px;
+  border-top: 3px solid var(--accent);
+  background: rgba(255,254,250,.62);
+}
+.metric .value {
+  display: block;
+  color: var(--ink);
+  font: 700 1.75em/1 var(--serif);
+  letter-spacing: -.045em;
+}
+.metric .label { display: block; margin-top: 10px; color: var(--ink-soft); font-size: .68em; line-height: 1.4; }
+
+.pair {
+  display: grid;
+  grid-template-columns: 92px 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.pair:last-child { border-bottom: 1px solid var(--line); }
+.pair time { color: var(--ink-faint); font: .6em var(--mono); }
+.pair .lang { display: block; margin-bottom: 5px; color: var(--ink-faint); font: 700 .52em var(--mono); letter-spacing: .06em; }
+.pair p { margin: 0; color: var(--ink-soft); font-size: .72em; line-height: 1.42; }
+.pair .hindi p { color: var(--ink); font-size: .77em; }
+
+.shot {
+  width: 100%;
+  max-height: 476px;
+  object-fit: cover;
+  object-position: center;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  box-shadow: 0 24px 54px -38px rgba(41,38,30,.5);
+}
+
+.figure-surface {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255,254,250,.58);
+}
+.figure-surface img { margin: 0 auto; }
+
+.cap { margin: 4px 0 0; color: var(--ink-faint); font-size: .58em; text-align: center; }
+.eyebrow { display: block; margin-bottom: 12px; color: var(--accent-dark); font: 700 .58em var(--mono); letter-spacing: .1em; }
+.big-line { max-width: 980px; color: var(--ink-soft); font-size: 1.18em; line-height: 1.35; text-wrap: balance; }
+.punch { color: var(--accent-dark); }
+
+/* Title */
 section.title {
   justify-content: center !important;
-  text-align: left;
-  padding: 90px 100px;
+  padding: 92px 100px;
+}
+section.title::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 270px;
+  height: 100%;
+  background:
+    linear-gradient(90deg, transparent, rgba(185,95,56,.06)),
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(185,95,56,.10) 18px 21px);
 }
 section.title h1 {
-  font-size: 2.5em;
-  border: none;
-  margin-bottom: 4px;
-  padding-bottom: 0;
+  max-width: 900px;
+  margin: 0;
+  font-size: 3.05em;
+  letter-spacing: -.065em;
 }
-section.title p { margin: 6px 0; }
-section.title .subtitle {
-  font-family: Georgia, serif;
-  font-size: 1.25em;
-  color: var(--ink-2);
-  margin-bottom: 42px;
-}
-section.title .author { font-size: 1.0em; color: var(--ink); font-weight: 600; }
-section.title .affil  { font-size: 0.88em; color: var(--ink-2); }
-section.title .date   { font-size: 0.78em; color: var(--ink-3); margin-top: 30px; }
+section.title .subtitle { max-width: 800px; margin: 18px 0 44px; color: var(--ink-soft); font-size: 1.28em; line-height: 1.3; }
+section.title .author { margin: 0; font-weight: 700; }
+section.title .affil { margin: 2px 0; color: var(--ink-soft); font-size: .84em; }
+section.title .date { margin-top: 24px; color: var(--ink-faint); font: .62em var(--mono); }
 section.title::after { content: none; }
 
-/* Section divider slide. */
-section.divider {
+section.close {
   justify-content: center !important;
-  background: var(--navy);
-  color: #ffffff;
 }
-section.divider h1 {
-  color: #ffffff;
-  border: none;
-  font-size: 2em;
-}
-section.divider p { color: #c9d6e4; }
+section.close h1 { max-width: 980px; font-size: 2.6em; }
+section.close .big-line { max-width: 900px; }
+
+section.compact { font-size: 21px; }

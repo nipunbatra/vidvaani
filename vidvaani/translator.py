@@ -3,6 +3,7 @@
 import os
 import json
 from dataclasses import dataclass
+from typing import Callable
 from google import genai
 
 from .costs import CostTracker
@@ -93,7 +94,8 @@ def translate_segments(
     source_lang: str = "English",
     target_lang: str = "Hindi",
     model: str = "gemini-2.5-flash",
-    batch_size: int = 20
+    batch_size: int = 20,
+    progress_callback: Callable[[list[TranslatedSegment], int, int], None] | None = None,
 ) -> list[TranslatedSegment]:
     """Translate transcript segments to target language.
 
@@ -121,6 +123,26 @@ def translate_segments(
             client, batch, source_lang, target_lang, model, start_id=i
         )
         all_translated.extend(batch_result)
+
+        if progress_callback:
+            completed_batch = [
+                TranslatedSegment(
+                    start=item["start"],
+                    end=item["end"],
+                    original=item["text"],
+                    translated=item["translated"],
+                )
+                for item in batch_result
+            ]
+            try:
+                progress_callback(
+                    completed_batch,
+                    min(i + len(batch), len(segments)),
+                    len(segments),
+                )
+            except Exception:
+                # UI progress must never invalidate a completed API response.
+                pass
 
     return [
         TranslatedSegment(

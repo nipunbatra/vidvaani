@@ -378,7 +378,8 @@ def create_hindi_video(
     output_path: Path,
     keep_original: bool = False,
     original_volume: float = 0.1,
-    preserve_non_speech: bool = True
+    preserve_non_speech: bool = True,
+    output_duration: float | None = None,
 ) -> AssemblyResult:
     """Create Hindi dubbed video from segments.
 
@@ -389,11 +390,18 @@ def create_hindi_video(
         keep_original: Keep original audio at low volume during speech
         original_volume: Volume of original audio if kept (0.0-1.0)
         preserve_non_speech: Keep original audio during non-speech (intro/outro/pauses)
+        output_duration: Optional hard end time. Demo runs use the end of the
+            final processed segment so untranslated English is not appended.
 
     Returns:
         AssemblyResult with output info
     """
-    video_duration = get_duration(video_path)
+    source_duration = get_duration(video_path)
+    video_duration = (
+        min(source_duration, output_duration)
+        if output_duration is not None and output_duration > 0
+        else source_duration
+    )
 
     with tempfile.NamedTemporaryFile(suffix=".m4a", delete=False) as tmp:
         combined_audio_path = Path(tmp.name)

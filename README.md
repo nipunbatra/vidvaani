@@ -2,7 +2,7 @@
 
 AI-powered pipeline that dubs YouTube videos into Hindi. It downloads a video, transcribes it locally, translates the transcript, synthesizes natural Hindi speech, and reassembles the video — preserving intro music, pauses, and background audio.
 
-**Demo page:** https://nipunbatra.github.io/vidvaani/ · **Slides:** [HTML](https://nipunbatra.github.io/vidvaani/slides/vidvaani.html) / [PDF](https://nipunbatra.github.io/vidvaani/slides/vidvaani.pdf)
+**Demo page:** https://nipunbatra.github.io/vidvaani/ · **Browser lab:** https://nipunbatra.github.io/vidvaani/lab/ · **Slides:** [HTML](https://nipunbatra.github.io/vidvaani/slides/vidvaani.html) / [PDF](https://nipunbatra.github.io/vidvaani/slides/vidvaani.pdf)
 
 ## Features
 
@@ -76,6 +76,16 @@ listens on all interfaces by default. Runs execute one at a time so local ML and
 assembly do not compete for resources; additional requests remain queued. The
 finished MP4, SRT, and both transcript files can be previewed or downloaded from
 the app.
+
+## Browser Lab (GitHub Pages)
+
+The [browser lab](https://nipunbatra.github.io/vidvaani/lab/) is a separate,
+static WebGPU/WASM experiment. It runs FFmpeg, Whisper, Qwen3 translation, and
+MMS Hindi speech in the browser, with a direct Gemini BYOK expert mode for users
+who choose cloud translation or speech. The video remains on the device; direct
+Gemini mode sends only the text needed for the selected phase. See
+[the browser-lab documentation](browser-lab/README.md) and
+[security model](browser-lab/SECURITY.md) before using a key.
 
 ## Usage
 

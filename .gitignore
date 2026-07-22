@@ -21,3 +21,6 @@ __pycache__/
 # Lock file (optional, can include if you want reproducibility)
 # uv.lock
 out/
+
+# Browser lab build dependencies (the generated lab/ site is committed)
+browser-lab/node_modules/

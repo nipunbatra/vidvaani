@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self' https://huggingface.co https://cdn-lfs.hf.co https://cdn-lfs-us-1.hf.co https://*.xethub.hf.co https://generativelanguage.googleapis.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="light" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>VidVaani Browser Lab — local-first Hindi dubbing</title>
+    <meta
+      name="description"
+      content="A security-conscious, local-first WebGPU experiment for Hindi lecture dubbing."
+    />
+    <script type="module" crossorigin src="./assets/index-DxTM9ubz.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CCQ9LLOd.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../" aria-label="Return to VidVaani">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        <span>VIDVAANI</span>
+        <span class="brand-context">BROWSER LAB</span>
+      </a>
+      <div class="runtime" id="runtime-pill">
+        <span class="runtime-dot"></span>
+        <span id="runtime-label">Checking this device</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro shell">
+        <div class="intro-copy">
+          <span class="kicker">GITHUB PAGES · WEBGPU + WASM</span>
+          <h1>Run the Hindi dubbing pipeline in your browser.</h1>
+          <p>
+            This lab is hosted entirely on GitHub Pages. Media processing and the local model path
+            run on your device; Gemini is an optional expert mode using a key entered for this tab.
+          </p>
+        </div>
+        <aside class="privacy-ledger" aria-label="Privacy boundaries">
+          <div class="ledger-row">
+            <span>Video and audio</span>
+            <strong>Remain on this device</strong>
+          </div>
+          <div class="ledger-row">
+            <span>Local model files</span>
+            <strong>Fetched from Hugging Face</strong>
+          </div>
+          <div class="ledger-row">
+            <span>Gemini mode</span>
+            <strong>Text and key go directly to Google</strong>
+          </div>
+          <div class="ledger-row">
+            <span>Project data and analytics</span>
+            <strong>Memory only · no analytics</strong>
+          </div>
+          <p class="ledger-note">Downloaded model weights may remain in the browser cache.</p>
+        </aside>
+      </section>
+
+      <section class="workspace shell">
+        <aside class="setup-panel">
+          <div class="section-heading">
+            <span class="section-number">01</span>
+            <div>
+              <h2>Input and compute</h2>
+              <p>Short clips only in this research build.</p>
+            </div>
+          </div>
+
+          <label class="dropzone" id="dropzone" for="media-file">
+            <input
+              id="media-file"
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,audio/wav,audio/mpeg,audio/mp4"
+            />
+            <span class="dropzone-title">Choose a lecture clip</span>
+            <span class="dropzone-help">MP4, WebM, MOV, WAV or MP3 · up to 120 seconds</span>
+            <span class="file-summary" id="file-summary">No file selected</span>
+          </label>
+          <button class="sample-button" id="load-demo" type="button">
+            Load the 58 s lecture sample
+            <span>2.4 MB · hosted with this site</span>
+          </button>
+
+          <div class="capability-grid" aria-label="Browser capabilities">
+            <div><span>SECURE CONTEXT</span><strong id="cap-secure">Checking</strong></div>
+            <div><span>WEBGPU</span><strong id="cap-webgpu">Checking</strong></div>
+            <div><span>WASM</span><strong id="cap-wasm">Checking</strong></div>
+            <div><span>MEMORY</span><strong id="cap-memory">Unknown</strong></div>
+          </div>
+
+          <div class="model-config">
+            <label class="field">
+              <span>English transcription</span>
+              <select id="stt-model">
+                <option value="onnx-community/whisper-tiny.en">Whisper Tiny.en · fastest</option>
+                <option value="onnx-community/whisper-base" selected>Whisper Base · recommended</option>
+                <option value="onnx-community/whisper-small.en">Whisper Small.en · higher accuracy</option>
+              </select>
+              <small id="stt-help">Balanced accuracy for clear lecture speech; WebGPU preferred, WASM fallback.</small>
+            </label>
+
+            <fieldset class="field provider-field">
+              <legend>Hindi translation</legend>
+              <div class="segmented">
+                <label><input type="radio" name="translation-provider" value="local" checked /><span>Local</span></label>
+                <label><input type="radio" name="translation-provider" value="gemini" /><span>Gemini</span></label>
+              </div>
+              <select id="translation-model">
+                <option value="onnx-community/Qwen3-0.6B-ONNX" selected>Qwen3 0.6B q4 · fast demo</option>
+                <option value="onnx-community/Qwen3-1.7B-ONNX">Qwen3 1.7B q4 · better Hindi</option>
+              </select>
+              <small id="translation-help">Runs through WebGPU; approximately 570 MB for the recommended model.</small>
+            </fieldset>
+
+            <fieldset class="field provider-field">
+              <legend>Hindi speech</legend>
+              <div class="segmented">
+                <label><input type="radio" name="speech-provider" value="local" checked /><span>Local</span></label>
+                <label><input type="radio" name="speech-provider" value="gemini" /><span>Gemini</span></label>
+              </div>
+              <select id="speech-model">
+                <option value="q8" selected>MMS Hindi q8 · recommended</option>
+                <option value="fp32">MMS Hindi fp32 · larger model</option>
+              </select>
+              <small id="speech-help">Downloadable Hindi speech via Transformers.js; research/non-commercial model licence.</small>
+            </fieldset>
+          </div>
+
+          <div class="key-panel" id="key-panel" hidden>
+            <div class="key-heading">
+              <div>
+                <span class="key-label">EXPERT BYOK MODE</span>
+                <strong>Gemini API key</strong>
+              </div>
+              <button type="button" class="text-button" id="forget-key">Forget key</button>
+            </div>
+            <input
+              id="gemini-key"
+              type="password"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
+              data-lpignore="true"
+              placeholder="Paste for this tab only"
+            />
+            <p>
+              Never saved or logged. It is sent in an <code>x-goog-api-key</code> header directly
+              to <code>generativelanguage.googleapis.com</code>. Google advises against browser-side
+              production keys; use a restricted, disposable key. This tab forgets it after each run.
+            </p>
+          </div>
+
+          <div class="model-boundary">
+            <strong>Why not Gemma 4 or Qwen3-TTS here?</strong>
+            <p>
+              The working 31B/1.7B native pipeline is too large for reliable browser execution.
+              This lab uses browser-tested variants and does not pretend otherwise.
+            </p>
+          </div>
+
+          <button class="run-button" id="run-button" type="button" disabled>
+            <span>Start local processing</span>
+            <span aria-hidden="true">→</span>
+          </button>
+          <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current run</button>
+          <p class="form-error" id="form-error" role="alert"></p>
+        </aside>
+
+        <section class="process-panel" aria-live="polite">
+          <div class="section-heading process-heading">
+            <span class="section-number">02</span>
+            <div>
+              <h2>Inspectable run</h2>
+              <p>Select a phase to see its evidence and timing.</p>
+            </div>
+            <div class="run-total"><span>RUN TIME</span><strong id="run-time">00:00</strong></div>
+          </div>
+
+          <ol class="phase-list" id="phase-list"></ol>
+
+          <article class="phase-detail" id="phase-detail">
+            <header>
+              <div>
+                <span class="phase-eyebrow" id="detail-eyebrow">PHASE 01 · WAITING</span>
+                <h3 id="detail-title">Media inspection</h3>
+                <p id="detail-description">Choose a short clip to begin.</p>
+              </div>
+              <strong class="detail-time" id="detail-time">—</strong>
+            </header>
+            <div class="progress-track" aria-hidden="true"><i id="detail-progress"></i></div>
+            <div class="detail-layout">
+              <dl class="metric-list" id="detail-metrics"></dl>
+              <div class="evidence" id="detail-evidence">
+                <div class="empty-state">
+                  <span>NO LOCAL DATA YET</span>
+                  <p>Files and intermediate text remain in memory until you close or reload this tab.</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <section class="activity-section">
+            <div class="activity-heading">
+              <h3>Activity</h3>
+              <button type="button" class="text-button" id="clear-activity">Clear view</button>
+            </div>
+            <ol id="activity-list" class="activity-list">
+              <li class="activity-empty">No processing events yet.</li>
+            </ol>
+          </section>
+
+          <section class="outputs-section" id="outputs-section" hidden>
+            <div class="section-heading output-heading">
+              <span class="section-number">03</span>
+              <div>
+                <h2>Review and export</h2>
+                <p>Generated artifacts are local object URLs and disappear on reload.</p>
+              </div>
+            </div>
+            <video id="output-video" controls playsinline></video>
+            <div class="output-actions" id="output-actions"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer shell">
+      <p>VidVaani Browser Lab is an experimental offshoot of the native Python pipeline.</p>
+      <div><a href="../">Public demonstrations</a><a href="https://github.com/nipunbatra/vidvaani">Source code</a></div>
+    </footer>
+
+  </body>
+</html>

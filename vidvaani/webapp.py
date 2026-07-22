@@ -472,7 +472,9 @@ def get_transcript(job_id: str, language: Literal["english", "hindi"]) -> JSONRe
 def main() -> None:
     import uvicorn
 
-    host = os.environ.get("VIDVAANI_WEB_HOST", "127.0.0.1")
+    # Listen on all interfaces by default so the control room can be driven
+    # from another machine on the same LAN or Tailscale network.
+    host = os.environ.get("VIDVAANI_WEB_HOST", "0.0.0.0")
     port = int(os.environ.get("VIDVAANI_WEB_PORT", "7860"))
     uvicorn.run("vidvaani.webapp:app", host=host, port=port, reload=False)
 

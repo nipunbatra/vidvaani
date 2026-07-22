@@ -70,7 +70,9 @@ timing/mix, and final deliverables.
 uv run --frozen vidvaani-web
 ```
 
-Open <http://127.0.0.1:7860>. Runs execute one at a time so local ML and video
+Open <http://127.0.0.1:7860> on this machine, or use the machine's LAN/Tailscale
+address (for example, `http://100.x.x.x:7860`) from another device. The server
+listens on all interfaces by default. Runs execute one at a time so local ML and video
 assembly do not compete for resources; additional requests remain queued. The
 finished MP4, SRT, and both transcript files can be previewed or downloaded from
 the app.
